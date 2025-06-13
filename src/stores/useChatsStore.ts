@@ -205,6 +205,7 @@ export interface ChatsStoreState {
     content: string
   ) => Promise<{ ok: boolean; error?: string }>;
   createUser: (username: string) => Promise<{ ok: boolean; error?: string }>;
+  refreshUserCounts: () => Promise<{ ok: boolean; error?: string; refreshedCount?: number }>;
 
   incrementUnread: (roomId: string) => void;
   clearUnread: (roomId: string) => void;
@@ -249,6 +250,7 @@ const getInitialState = (): Omit<
   | "incrementUnread"
   | "clearUnread"
   | "setHasEverUsedChats"
+  | "refreshUserCounts"
 > => {
   // Try to recover username and auth token if available
   const recoveredUsername = getUsernameFromRecovery();
@@ -611,35 +613,44 @@ export const useChatsStore = create<ChatsStoreState>()(
           set(getInitialState());
         },
         fetchRooms: async () => {
-          console.log("[ChatsStore] Fetching rooms...");
           const currentUsername = get().username;
 
+          console.log(
+            "[ChatsStore] Fetching rooms for user:",
+            currentUsername || "anonymous"
+          );
+
           try {
-            const queryParams = new URLSearchParams({ action: "getRooms" });
+            const url = new URL("/api/chat-rooms", window.location.origin);
+            url.searchParams.set("action", "getRooms");
             if (currentUsername) {
-              queryParams.append("username", currentUsername);
+              url.searchParams.set("username", currentUsername);
             }
 
-            const response = await fetch(
-              `/api/chat-rooms?${queryParams.toString()}`
-            );
+            const response = await fetch(url.toString());
+
             if (!response.ok) {
               const errorData = await response.json().catch(() => ({
                 error: `HTTP error! status: ${response.status}`,
               }));
-              return {
-                ok: false,
-                error: errorData.error || "Failed to fetch rooms",
-              };
+              console.error("[ChatsStore] Error fetching rooms:", errorData);
+              return { ok: false, error: errorData.error || "Failed to fetch rooms" };
             }
 
             const data = await response.json();
             if (data.rooms && Array.isArray(data.rooms)) {
+              console.log(
+                `[ChatsStore] Fetched ${data.rooms.length} rooms successfully`
+              );
               set({ rooms: data.rooms });
               return { ok: true };
+            } else {
+              console.error(
+                "[ChatsStore] Invalid response format for rooms:",
+                data
+              );
+              return { ok: false, error: "Invalid response format" };
             }
-
-            return { ok: false, error: "Invalid response format" };
           } catch (error) {
             console.error("[ChatsStore] Error fetching rooms:", error);
             return { ok: false, error: "Network error. Please try again." };
@@ -1083,6 +1094,67 @@ export const useChatsStore = create<ChatsStoreState>()(
         },
         setHasEverUsedChats: (value: boolean) => {
           set({ hasEverUsedChats: value });
+        },
+        refreshUserCounts: async () => {
+          const currentUsername = get().username;
+          const currentToken = get().authToken;
+
+          if (!currentUsername || !currentToken) {
+            console.log(
+              "[ChatsStore] No username or auth token set, skipping user count refresh"
+            );
+            return { ok: false, error: "Username and auth token required" };
+          }
+
+          console.log(
+            "[ChatsStore] Refreshing user counts for existing user:",
+            currentUsername
+          );
+
+          try {
+            const headers: HeadersInit = {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${currentToken}`,
+              "X-Username": currentUsername,
+            };
+
+            const response = await makeAuthenticatedRequest(
+              "/api/chat-rooms?action=refreshUserCounts",
+              {
+                method: "GET",
+                headers,
+              },
+              get().refreshAuthToken
+            );
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({
+                error: `HTTP error! status: ${response.status}`,
+              }));
+              console.error("[ChatsStore] Error refreshing user counts:", errorData);
+              return { ok: false, error: errorData.error || "Failed to refresh user counts" };
+            }
+
+            const data = await response.json();
+            if (data.success) {
+              console.log(
+                `[ChatsStore] User counts refreshed successfully. Refreshed count: ${data.refreshedCount || 0}`
+              );
+              
+              // Refresh rooms to get updated counts
+              await get().fetchRooms();
+              
+              return { ok: true, refreshedCount: data.refreshedCount || 0 };
+            } else {
+              console.error(
+                "[ChatsStore] Invalid response format for user count refresh"
+              );
+              return { ok: false, error: "Invalid response format for user count refresh" };
+            }
+          } catch (error) {
+            console.error("[ChatsStore] Error refreshing user counts:", error);
+            return { ok: false, error: "Network error while refreshing user counts" };
+          }
         },
       };
     },

@@ -31,6 +31,7 @@ export function useChatRoom(isWindowOpen: boolean) {
     addMessageToRoom,
     removeMessageFromRoom,
     incrementUnread,
+    refreshUserCounts,
   } = useChatsStore();
 
   // Derive isAdmin directly from the username
@@ -55,6 +56,29 @@ export function useChatRoom(isWindowOpen: boolean) {
   const currentRoomMessages = currentRoomId
     ? roomMessages[currentRoomId] || []
     : [];
+
+  // Manual refresh function for user counts
+  const handleRefreshUserCounts = useCallback(async () => {
+    if (!isAdmin) {
+      console.log("[useChatRoom] Only admin can refresh user counts");
+      return { ok: false, error: "Admin access required" };
+    }
+
+    console.log("[useChatRoom] Manually refreshing user counts");
+    const result = await refreshUserCounts();
+    
+    if (result.ok) {
+      toast("User Counts Refreshed", {
+        description: `Updated ${result.refreshedCount || 0} rooms with stale counts`,
+      });
+    } else {
+      toast("Refresh Failed", {
+        description: result.error || "Failed to refresh user counts",
+      });
+    }
+    
+    return result;
+  }, [isAdmin, refreshUserCounts]);
 
   // --- Pusher Setup ---
   const initializePusher = useCallback(() => {
@@ -448,6 +472,28 @@ export function useChatRoom(isWindowOpen: boolean) {
     };
   }, [unsubscribeFromRoomChannel]);
 
+  // Periodic refresh of user counts to prevent stale data
+  useEffect(() => {
+    if (!isWindowOpen || !isAdmin) return;
+
+    // Set up periodic refresh every 5 minutes for admin users
+    const refreshInterval = setInterval(async () => {
+      console.log("[useChatRoom] Performing periodic user count refresh");
+      try {
+        const result = await refreshUserCounts();
+        if (result.ok && result.refreshedCount && result.refreshedCount > 0) {
+          console.log(`[useChatRoom] Periodic refresh updated ${result.refreshedCount} rooms`);
+        }
+      } catch (error) {
+        console.error("[useChatRoom] Error during periodic user count refresh:", error);
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [isWindowOpen, isAdmin, refreshUserCounts]);
+
   return {
     // State
     username,
@@ -484,5 +530,8 @@ export function useChatRoom(isWindowOpen: boolean) {
     setIsDeleteRoomDialogOpen,
     roomToDelete,
     confirmDeleteRoom,
+
+    // Manual refresh function for user counts
+    handleRefreshUserCounts,
   };
 }

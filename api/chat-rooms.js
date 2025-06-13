@@ -291,6 +291,47 @@ async function getDetailedRooms() {
   return rooms.filter((r) => r !== null);
 }
 
+/**
+ * Refresh user counts for all rooms by pruning stale users and updating counts
+ * This helps prevent stale user counts when users don't explicitly leave rooms
+ */
+async function refreshAllRoomUserCounts(requestId) {
+  logInfo(requestId, "Starting refresh of all room user counts");
+  
+  try {
+    const roomKeys = await redis.keys(`${CHAT_ROOM_PREFIX}*`);
+    logInfo(requestId, `Found ${roomKeys.length} rooms to refresh`);
+    
+    if (roomKeys.length === 0) {
+      return { refreshedCount: 0 };
+    }
+
+    let refreshedCount = 0;
+    const refreshPromises = roomKeys.map(async (roomKey) => {
+      try {
+        const roomId = roomKey.substring(CHAT_ROOM_PREFIX.length);
+        const oldCount = await redis.scard(`${CHAT_ROOM_USERS_PREFIX}${roomId}`);
+        const newCount = await refreshRoomUserCount(roomId);
+        
+        if (oldCount !== newCount) {
+          logInfo(requestId, `Room ${roomId}: user count updated from ${oldCount} to ${newCount}`);
+          refreshedCount++;
+        }
+      } catch (error) {
+        logError(requestId, `Error refreshing user count for room ${roomKey}:`, error);
+      }
+    });
+
+    await Promise.all(refreshPromises);
+    logInfo(requestId, `Completed refresh: ${refreshedCount} rooms had stale counts`);
+    
+    return { refreshedCount };
+  } catch (error) {
+    logError(requestId, "Error during bulk user count refresh:", error);
+    throw error;
+  }
+}
+
 // Helper functions
 const generateId = () => {
   return Math.random().toString(36).substring(2, 15);
@@ -478,6 +519,18 @@ export async function GET(request) {
       }
       case "getUsers":
         return await handleGetUsers(requestId);
+      case "refreshUserCounts": {
+        // Admin-only action to manually refresh all user counts
+        const { username, token } = extractAuth(request);
+        const isValid = await validateAuth(username, token, requestId);
+        if (!isValid.valid) {
+          return createErrorResponse("Unauthorized", 401);
+        }
+        if (username?.toLowerCase() !== "ryo") {
+          return createErrorResponse("Forbidden - Admin access required", 403);
+        }
+        return await handleRefreshUserCounts(requestId);
+      }
       default:
         logInfo(requestId, `Invalid action: ${action}`);
         return createErrorResponse("Invalid action", 400);
@@ -665,6 +718,22 @@ async function handleGetRooms(request, requestId) {
     // Extract username from request to filter private rooms
     const url = new URL(request.url);
     const username = url.searchParams.get("username")?.toLowerCase() || null;
+    const forceRefresh = url.searchParams.get("refreshUserCounts") === "true";
+
+    // Periodically refresh user counts to prevent stale data
+    // Do this every ~10th request or when explicitly requested
+    const shouldRefreshCounts = forceRefresh || Math.random() < 0.1;
+    
+    if (shouldRefreshCounts) {
+      logInfo(requestId, "Refreshing user counts before fetching rooms");
+      try {
+        const refreshResult = await refreshAllRoomUserCounts(requestId);
+        logInfo(requestId, `User count refresh completed: ${refreshResult.refreshedCount} rooms updated`);
+      } catch (refreshError) {
+        logError(requestId, "Error refreshing user counts (continuing with room fetch):", refreshError);
+        // Continue with room fetch even if refresh fails
+      }
+    }
 
     const allRooms = await getDetailedRooms();
 
@@ -1568,6 +1637,45 @@ async function handleResetUserCounts(username, requestId) {
   } catch (error) {
     logError(requestId, "Error resetting user counts:", error);
     return createErrorResponse("Failed to reset user counts", 500);
+  }
+}
+
+// Function to refresh user counts in all rooms by pruning stale users
+async function handleRefreshUserCounts(requestId) {
+  logInfo(requestId, "Refreshing user counts for all rooms");
+
+  try {
+    const refreshResult = await refreshAllRoomUserCounts(requestId);
+    
+    // Notify clients that user counts have been refreshed
+    try {
+      await broadcastRoomsUpdated();
+      logInfo(
+        requestId,
+        "Pusher event triggered: rooms-updated after user count refresh"
+      );
+    } catch (pusherError) {
+      logError(
+        requestId,
+        "Error triggering Pusher event for user count refresh:",
+        pusherError
+      );
+      // Continue with response - Pusher error shouldn't block the operation
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Refreshed user counts for all rooms`,
+        refreshedCount: refreshResult.refreshedCount,
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    logError(requestId, "Error refreshing user counts:", error);
+    return createErrorResponse("Failed to refresh user counts", 500);
   }
 }
 
