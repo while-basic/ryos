@@ -270,13 +270,13 @@ export default function HtmlPreview({
       theme: {
         extend: {
           fontFamily: {
-            sans: ["Geneva-12", "ArkPixel", "SerenityOS-Emoji", "sans-serif"],
-            mono: ["Monaco", "ArkPixel", "SerenityOS-Emoji", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace"],
-            serif: ["Mondwest", "Yu Mincho", "Hiragino Mincho Pro", "Georgia", "Palatino", "SerenityOS-Emoji", "serif"],
-            emoji: ["SerenityOS-Emoji", "AppleColorEmoji", "AppleColorEmojiFallback"],
-            'geneva': ["Geneva-12", "ArkPixel", "SerenityOS-Emoji", "system-ui", "-apple-system", "sans-serif"],
-            'mondwest': ["Mondwest", "Yu Mincho", "Hiragino Mincho Pro", "Georgia", "Palatino", "Yu Mincho", "Hiragino Mincho Pro", "serif"],
-            'neuebit': ["NeueBit", "ArkPixel", "SerenityOS-Emoji", "Helvetica", "Arial", "Hiragino Sans", "sans-serif"],
+            sans: ["Geneva-12", "ArkPixel", "Apple Color Emoji", "Segoe UI Emoji", "SerenityOS-Emoji", "sans-serif"],
+            mono: ["Monaco", "ArkPixel", "Apple Color Emoji", "Segoe UI Emoji", "SerenityOS-Emoji", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace"],
+            serif: ["Mondwest", "Yu Mincho", "Hiragino Mincho Pro", "Georgia", "Palatino", "Apple Color Emoji", "Segoe UI Emoji", "SerenityOS-Emoji", "serif"],
+            emoji: ["Apple Color Emoji", "Segoe UI Emoji", "SerenityOS-Emoji", "Twemoji Mozilla", "Noto Color Emoji", "Android Emoji"],
+            'geneva': ["Geneva-12", "ArkPixel", "Apple Color Emoji", "Segoe UI Emoji", "SerenityOS-Emoji", "system-ui", "-apple-system", "sans-serif"],
+            'chicago': ["ChicagoKare", "ArkPixel", "system-ui", "-apple-system", "sans-serif"],
+            'neuebit': ["NeueBit", "ArkPixel", "Apple Color Emoji", "Segoe UI Emoji", "SerenityOS-Emoji", "Helvetica", "Arial", "Hiragino Sans", "sans-serif"],
             'monaco': ["Monaco", "ArkPixel", "SerenityOS-Emoji", "monospace"],
             'jacquard': ["Jacquard", "Yu Mincho", "Hiragino Mincho Pro", "Georgia", "Palatino", "serif"]
           }

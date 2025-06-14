@@ -68,7 +68,7 @@ export function SoundSlot({
           {showEmoji &&
             (slot.emoji ? (
               <span
-                className={`text-xl md:text-xl hover:opacity-80 ${
+                className={`emoji text-xl md:text-xl hover:opacity-80 ${
                   slot.audioData && !isRecording
                     ? "cursor-pointer hover:bg-black/7 rounded px-0.5"
                     : "cursor-default"
@@ -83,7 +83,7 @@ export function SoundSlot({
               </span>
             ) : (
               <span
-                className={`invisible group-hover:visible transition-opacity text-xl md:text-xl hover:opacity-80 ${
+                className={`emoji invisible group-hover:visible transition-opacity text-xl md:text-xl hover:opacity-80 ${
                   slot.audioData && !isRecording
                     ? "cursor-pointer hover:bg-black/7 rounded px-0.5"
                     : "cursor-default"

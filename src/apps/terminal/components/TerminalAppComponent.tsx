@@ -3358,7 +3358,7 @@ assistant
           style={{
             fontSize: `${fontSize}px`,
             fontFamily:
-              '"Monaco", "ArkPixel", "SerenityOS-Emoji", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", "Courier New", monospace',
+              '"Monaco", "ArkPixel", "Apple Color Emoji", "Segoe UI Emoji", "SerenityOS-Emoji", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", "Courier New", monospace',
           }}
           animate={
             terminalFlash

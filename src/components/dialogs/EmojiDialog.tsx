@@ -238,7 +238,7 @@ export function EmojiDialog({
             {EMOJIS.map((emoji, i) => (
               <button
                 key={i}
-                className="p-1 text-2xl hover:bg-white/20 rounded cursor-pointer font-['SerenityOS-Emoji']"
+                className="p-1 text-2xl hover:bg-white/20 rounded cursor-pointer"
                 onClick={() => {
                   onEmojiSelect(emoji);
                   onOpenChange(false);
