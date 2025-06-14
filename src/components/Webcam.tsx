@@ -39,7 +39,10 @@ export function Webcam({
   useEffect(() => {
     if (!isPreview) {
       startCamera();
-      return () => stopCamera();
+      return () => {
+        console.log("Webcam component cleanup - stopping camera");
+        stopCamera();
+      };
     } else if (sharedStream) {
       setStream(sharedStream);
       if (videoRef.current) {
@@ -55,6 +58,28 @@ export function Webcam({
       onStreamReady(stream);
     }
   }, [stream, onStreamReady, isPreview]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Ensure stream is stopped when component unmounts
+      if (stream && !isPreview) {
+        console.log("Webcam component unmounting - final cleanup");
+        stream.getTracks().forEach((track) => {
+          if (track.readyState === 'live') {
+            console.log(`Final cleanup - stopping track: ${track.label}`);
+            track.stop();
+          }
+        });
+      }
+      
+      // Cancel any pending animation frames
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, []);
 
   // Real-time WebGL preview loop for distortion filters
   useEffect(() => {
@@ -213,8 +238,17 @@ export function Webcam({
 
   const stopCamera = () => {
     if (stream && !isPreview) {
-      stream.getTracks().forEach((track) => track.stop());
+      console.log(`Stopping Webcam stream with ${stream.getTracks().length} tracks`);
+      stream.getTracks().forEach((track) => {
+        console.log(`Stopping track: ${track.label} (${track.kind}, readyState: ${track.readyState})`);
+        track.stop();
+      });
       setStream(null);
+      
+      // Also clear the video element's srcObject
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
     }
   };
 

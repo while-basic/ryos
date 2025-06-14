@@ -176,6 +176,8 @@ export function PhotoBoothComponent({
 
   // Fully stop any active media streams and clear timers
   const stopCamera = () => {
+    console.log("Stopping camera streams...");
+    
     // Aggregate all known streams so we can safely stop them
     const streams: MediaStream[] = [];
 
@@ -185,11 +187,14 @@ export function PhotoBoothComponent({
     if (mainStream && mainStream !== stream) streams.push(mainStream);
 
     streams.forEach((s) => {
-      s.getTracks().forEach((track) => track.stop());
+      s.getTracks().forEach((track) => {
+        console.log(`Stopping track: ${track.label} (${track.kind})`);
+        track.stop();
+      });
     });
 
     // Clear local references so React knows the streams are gone
-      setStream(null);
+    setStream(null);
     setMainStream(null);
 
     // Clear any running interval that might be taking additional photos
@@ -197,6 +202,10 @@ export function PhotoBoothComponent({
       clearInterval(multiPhotoTimer);
       setMultiPhotoTimer(null);
     }
+    
+    // Reset camera-related states
+    setCameraError(null);
+    setIsLoadingCamera(false);
   };
 
   // Ensure that we always stop the camera when the Photo Booth window is
@@ -723,6 +732,10 @@ export function PhotoBoothComponent({
       if (lastPhoto && lastPhoto.startsWith("blob:")) {
         URL.revokeObjectURL(lastPhoto);
       }
+      
+      // Ensure camera is stopped when component unmounts
+      console.log("Component unmounting - stopping camera");
+      stopCamera();
     };
   }, [lastPhoto]);
 
