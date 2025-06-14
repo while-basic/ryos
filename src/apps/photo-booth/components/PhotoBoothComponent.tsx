@@ -759,12 +759,24 @@ export function PhotoBoothComponent({
     files.some((file) => file.name === photo.filename)
   );
 
+  // ---
+  // Wrap the provided onClose so we can guarantee the webcam stream is
+  // stopped **immediately** when the user closes the Photo Booth window.
+  // This avoids situations where the component remains mounted (because we
+  // simply render `null`) and the camera keeps running in the background.
+  // ---
+
+  const handleClose = () => {
+    stopCamera();
+    onClose();
+  };
+
   if (!isWindowOpen) return null;
 
   return (
     <>
       <PhotoBoothMenuBar
-        onClose={onClose}
+        onClose={handleClose}
         onShowHelp={() => setShowHelp(true)}
         onShowAbout={() => setShowAbout(true)}
         onClearPhotos={handleClearPhotos}
@@ -778,7 +790,7 @@ export function PhotoBoothComponent({
       />
       <WindowFrame
         title="Photo Booth"
-        onClose={onClose}
+        onClose={handleClose}
         isForeground={isForeground}
         appId="photo-booth"
         skipInitialSound={skipInitialSound}
