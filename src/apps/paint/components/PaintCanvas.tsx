@@ -1166,18 +1166,19 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
           } else {
             // Lasso preview – draw current free-form path
             lassoPointsRef.current.push(point);
-            contextRef.current.save();
-            contextRef.current.strokeStyle = "#000";
-            contextRef.current.lineWidth = 1;
-            contextRef.current.setLineDash([5, 5]);
-            contextRef.current.beginPath();
-            const [first] = lassoPointsRef.current;
-            contextRef.current.moveTo(first.x, first.y);
-            lassoPointsRef.current.forEach((pt) =>
-              contextRef.current.lineTo(pt.x, pt.y)
-            );
-            contextRef.current.stroke();
-            contextRef.current.restore();
+            const ctx = contextRef.current;
+            if (ctx) {
+              ctx.save();
+              ctx.strokeStyle = "#000";
+              ctx.lineWidth = 1;
+              ctx.setLineDash([5, 5]);
+              ctx.beginPath();
+              const [first] = lassoPointsRef.current;
+              ctx.moveTo(first.x, first.y);
+              lassoPointsRef.current.forEach((pt) => ctx.lineTo(pt.x, pt.y));
+              ctx.stroke();
+              ctx.restore();
+            }
           }
           return;
         }
