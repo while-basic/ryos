@@ -83,6 +83,8 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
     const touchStartRef = useRef<Point | null>(null);
     const [isLoadingFile] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    // Stores points for free-form (lasso) selections
+    const lassoPointsRef = useRef<Point[]>([]);
 
     // Handle canvas resize
     useEffect(() => {
@@ -245,6 +247,15 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
 
         // Always restore the original canvas state before drawing selection
         contextRef.current.putImageData(lastImageRef.current, 0, 0);
+
+        // Draw the selected pixels so they remain visible
+        if (selection.imageData) {
+          contextRef.current.putImageData(
+            selection.imageData,
+            selection.startX,
+            selection.startY
+          );
+        }
 
         // Draw animated selection rectangle
         contextRef.current.save();
@@ -479,23 +490,50 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
                 img.onload = () => {
                   if (!contextRef.current || !canvasRef.current) return;
 
-                  // If there's a selection, paste into the selection area
+                  // Determine paste location
+                  let pasteX: number;
+                  let pasteY: number;
+
                   if (selection) {
-                    contextRef.current.drawImage(
-                      img,
-                      selection.startX,
-                      selection.startY,
-                      selection.width,
-                      selection.height
-                    );
+                    pasteX = selection.startX;
+                    pasteY = selection.startY;
                   } else {
-                    // If no selection, paste at center
-                    const x = (canvasRef.current.width - img.width) / 2;
-                    const y = (canvasRef.current.height - img.height) / 2;
-                    contextRef.current.drawImage(img, x, y);
+                    pasteX =
+                      (canvasRef.current.width - img.width) / 2;
+                    pasteY =
+                      (canvasRef.current.height - img.height) / 2;
                   }
+
+                  // Snapshot background before applying paste (for dragging later)
+                  lastImageRef.current = contextRef.current.getImageData(
+                    0,
+                    0,
+                    canvasRef.current.width,
+                    canvasRef.current.height
+                  );
+
+                  // Draw the pasted image
+                  contextRef.current.drawImage(img, pasteX, pasteY);
+
+                  // Capture imageData of pasted content
+                  const pastedImageData = contextRef.current.getImageData(
+                    pasteX,
+                    pasteY,
+                    img.width,
+                    img.height
+                  );
+
+                  // Create a new selection around pasted content
+                  setSelection({
+                    startX: pasteX,
+                    startY: pasteY,
+                    width: img.width,
+                    height: img.height,
+                    imageData: pastedImageData,
+                  });
+
                   saveToHistory();
-                  if (onContentChange) onContentChange();
+                  onContentChange?.();
                   resolve(null);
                 };
               });
@@ -525,6 +563,8 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
 
       saveToHistory();
       if (onContentChange) onContentChange();
+      // Remove active selection UI
+      setSelection(null);
     }, [selection, saveToHistory, onContentChange]);
 
     // Expose methods via ref
@@ -915,8 +955,8 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
           }
         }
 
-        // Handle selection tool click
-        if (selectedTool === "rect-select") {
+        // Handle selection tools click (rectangle & lasso)
+        if (selectedTool === "rect-select" || selectedTool === "select") {
           // If clicking outside selection, clear it
           if (selection && !isPointInSelection(point, selection)) {
             // Restore canvas to state before selection
@@ -928,6 +968,34 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
 
           // If clicking inside existing selection, prepare for drag
           if (selection && isPointInSelection(point, selection)) {
+            // Prepare the canvas state without the selection so we can drag it around
+            if (selection.imageData) {
+              // Clear selection area temporarily to get a clean background snapshot
+              contextRef.current.save();
+              contextRef.current.fillStyle = "#FFFFFF";
+              contextRef.current.fillRect(
+                selection.startX,
+                selection.startY,
+                selection.width,
+                selection.height
+              );
+              contextRef.current.restore();
+
+              // Snapshot the canvas without the selected pixels
+              lastImageRef.current = contextRef.current.getImageData(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+              );
+
+              // Redraw the selection pixels so nothing appears to have changed yet
+              contextRef.current.putImageData(
+                selection.imageData,
+                selection.startX,
+                selection.startY
+              );
+            }
             setIsDraggingSelection(true);
             dragStartRef.current = point;
             return;
@@ -935,6 +1003,10 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
 
           // Start new selection
           startPointRef.current = point;
+          // Reset lasso points when starting new selection
+          if (selectedTool === "select") {
+            lassoPointsRef.current = [point];
+          }
           // Store the current canvas state before starting new selection
           lastImageRef.current = contextRef.current.getImageData(
             0,
@@ -1042,40 +1114,71 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
           const dx = point.x - dragStartRef.current.x;
           const dy = point.y - dragStartRef.current.y;
 
-          setSelection((prev) => {
-            if (!prev) return null;
-            return {
-              ...prev,
-              startX: prev.startX + dx,
-              startY: prev.startY + dy,
-            };
-          });
+          if (selection.imageData && lastImageRef.current) {
+            // Restore clean canvas without selection
+            contextRef.current.putImageData(lastImageRef.current, 0, 0);
+
+            // New coordinates
+            const newX = selection.startX + dx;
+            const newY = selection.startY + dy;
+
+            // Draw the selection at the new position
+            contextRef.current.putImageData(selection.imageData, newX, newY);
+
+            // Update selection rect
+            setSelection((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    startX: newX,
+                    startY: newY,
+                  }
+                : null
+            );
+          }
 
           dragStartRef.current = point;
           return;
         }
 
         if (
-          selectedTool === "rect-select" &&
+          (selectedTool === "rect-select" ||
+            (selectedTool === "select" && lassoPointsRef.current.length > 0)) &&
           startPointRef.current &&
           lastImageRef.current
         ) {
           contextRef.current.putImageData(lastImageRef.current, 0, 0);
+          if (selectedTool === "rect-select") {
+            const width = point.x - startPointRef.current.x;
+            const height = point.y - startPointRef.current.y;
 
-          const width = point.x - startPointRef.current.x;
-          const height = point.y - startPointRef.current.y;
-
-          contextRef.current.save();
-          contextRef.current.strokeStyle = "#000";
-          contextRef.current.lineWidth = 1;
-          contextRef.current.setLineDash([5, 5]);
-          contextRef.current.strokeRect(
-            startPointRef.current.x,
-            startPointRef.current.y,
-            width,
-            height
-          );
-          contextRef.current.restore();
+            contextRef.current.save();
+            contextRef.current.strokeStyle = "#000";
+            contextRef.current.lineWidth = 1;
+            contextRef.current.setLineDash([5, 5]);
+            contextRef.current.strokeRect(
+              startPointRef.current.x,
+              startPointRef.current.y,
+              width,
+              height
+            );
+            contextRef.current.restore();
+          } else {
+            // Lasso preview – draw current free-form path
+            lassoPointsRef.current.push(point);
+            contextRef.current.save();
+            contextRef.current.strokeStyle = "#000";
+            contextRef.current.lineWidth = 1;
+            contextRef.current.setLineDash([5, 5]);
+            contextRef.current.beginPath();
+            const [first] = lassoPointsRef.current;
+            contextRef.current.moveTo(first.x, first.y);
+            lassoPointsRef.current.forEach((pt) =>
+              contextRef.current.lineTo(pt.x, pt.y)
+            );
+            contextRef.current.stroke();
+            contextRef.current.restore();
+          }
           return;
         }
 
@@ -1208,6 +1311,16 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
           selectedTool === "bucket"
         ) {
           saveToHistory();
+
+          // If we just finished dragging a selection, capture the new canvas state
+          if (isDraggingSelection && contextRef.current) {
+            lastImageRef.current = contextRef.current.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+          }
         }
 
         isDrawing.current = false;
@@ -1224,6 +1337,49 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
               contextRef.current.strokeStyle = pattern;
             }
           }
+        }
+
+        // Finalize free-form (lasso) selection
+        if (
+          selectedTool === "select" &&
+          lassoPointsRef.current.length > 2 &&
+          lastImageRef.current &&
+          contextRef.current
+        ) {
+          // Calculate bounding box
+          const xs = lassoPointsRef.current.map((p) => p.x);
+          const ys = lassoPointsRef.current.map((p) => p.y);
+          const minX = Math.min(...xs);
+          const maxX = Math.max(...xs);
+          const minY = Math.min(...ys);
+          const maxY = Math.max(...ys);
+          const absWidth = maxX - minX;
+          const absHeight = maxY - minY;
+
+          if (absWidth > 0 && absHeight > 0) {
+            // Restore canvas to state before drawing selection outline
+            contextRef.current.putImageData(lastImageRef.current, 0, 0);
+
+            const selectionImageData = contextRef.current.getImageData(
+              minX,
+              minY,
+              absWidth,
+              absHeight
+            );
+
+            setSelection({
+              startX: minX,
+              startY: minY,
+              width: absWidth,
+              height: absHeight,
+              imageData: selectionImageData,
+            });
+          } else {
+            contextRef.current.putImageData(lastImageRef.current, 0, 0);
+            setSelection(null);
+          }
+
+          lassoPointsRef.current = [];
         }
       },
       [
@@ -1308,7 +1464,7 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
           cursor:
             selectedTool === "hand"
               ? "grab"
-              : selectedTool === "rect-select"
+              : selectedTool === "rect-select" || selectedTool === "select"
               ? "crosshair"
               : selection
               ? "move"
@@ -1346,7 +1502,7 @@ export const PaintCanvas = forwardRef<PaintCanvasRef, PaintCanvasProps>(
                 cursor: selectedTool === "hand" ? "grab" : "crosshair",
               }}
               className={`${
-                selectedTool === "rect-select"
+                selectedTool === "rect-select" || selectedTool === "select"
                   ? "cursor-crosshair"
                   : selection
                   ? "cursor-move"
