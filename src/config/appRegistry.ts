@@ -8,6 +8,7 @@ import { FinderApp } from "@/apps/finder";
 import { PaintApp } from "@/apps/paint";
 import { VideosApp } from "@/apps/videos";
 import { PcApp } from "@/apps/pc";
+import { GameBoyApp } from "@/apps/gameboy";
 import { PhotoBoothApp } from "@/apps/photo-booth";
 import { SynthApp } from "@/apps/synth";
 import { IpodApp } from "@/apps/ipod";
@@ -130,6 +131,14 @@ export const appRegistry = {
       defaultSize: { width: 645, height: 511 },
       minSize: { width: 645, height: 511 },
       maxSize: { width: 645, height: 511 },
+    } as WindowConstraints,
+  },
+  [GameBoyApp.id]: {
+    ...GameBoyApp,
+    windowConfig: {
+      defaultSize: { width: 720, height: 540 },
+      minSize: { width: 640, height: 480 },
+      maxSize: { width: 1024, height: 768 },
     } as WindowConstraints,
   },
   [TerminalApp.id]: {
