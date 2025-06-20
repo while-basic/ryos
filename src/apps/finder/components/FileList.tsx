@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState, useRef, useEffect } from "react";
+import { useLongPress } from "@/hooks/useLongPress";
 
 export interface FileItem {
   name: string;
@@ -292,6 +293,17 @@ export function FileList({
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, file)}
                 onDragEnd={handleDragEnd}
+                {...useLongPress((touchEvent) => {
+                  if (onItemContextMenu) {
+                    const touch = touchEvent.touches[0];
+                    onItemContextMenu(file, {
+                      preventDefault: () => {},
+                      stopPropagation: () => {},
+                      clientX: touch.clientX,
+                      clientY: touch.clientY,
+                    } as unknown as React.MouseEvent);
+                  }
+                })}
               >
                 <TableCell className="flex items-center gap-2">
                   {file.contentUrl && isImageFile(file) ? (
@@ -367,6 +379,17 @@ export function FileList({
               onItemContextMenu(file, e);
             }
           }}
+          {...useLongPress((touchEvent) => {
+            if (onItemContextMenu) {
+              const touch = touchEvent.touches[0];
+              onItemContextMenu(file, {
+                preventDefault: () => {},
+                stopPropagation: () => {},
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+              } as unknown as React.MouseEvent);
+            }
+          })}
         >
           <FileIcon
             name={file.name}
