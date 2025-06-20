@@ -252,17 +252,20 @@ export function FileList({
   }
 
   const ListRow: React.FC<ListRowProps> = ({ file }) => {
-    const longPressHandlers = useLongPress((touchEvent) => {
-      if (onItemContextMenu) {
-        const touch = touchEvent.touches[0];
-        onItemContextMenu(file, {
-          preventDefault: () => {},
-          stopPropagation: () => {},
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-        } as unknown as React.MouseEvent);
-      }
-    });
+    const longPressHandlers = useLongPress(
+      (touchEvent) => {
+        if (onItemContextMenu) {
+          const touch = touchEvent.touches[0];
+          onItemContextMenu(file, {
+            preventDefault: () => {},
+            stopPropagation: () => {},
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+          } as unknown as React.MouseEvent);
+        }
+      },
+      { delay: 800 }
+    );
 
     return (
       <TableRow
@@ -337,17 +340,20 @@ export function FileList({
   }
 
   const GridItem: React.FC<GridItemProps> = ({ file }) => {
-    const longPressHandlers = useLongPress((touchEvent) => {
-      if (onItemContextMenu) {
-        const touch = touchEvent.touches[0];
-        onItemContextMenu(file, {
-          preventDefault: () => {},
-          stopPropagation: () => {},
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-        } as unknown as React.MouseEvent);
-      }
-    });
+    const longPressHandlers = useLongPress(
+      (touchEvent) => {
+        if (onItemContextMenu) {
+          const touch = touchEvent.touches[0];
+          onItemContextMenu(file, {
+            preventDefault: () => {},
+            stopPropagation: () => {},
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+          } as unknown as React.MouseEvent);
+        }
+      },
+      { delay: 800 }
+    );
 
     return (
       <div

@@ -681,11 +681,14 @@ export function FinderAppComponent({
   };
 
   // ------------------ Mobile long-press support (blank area) ------------------
-  const blankLongPressHandlers = useLongPress((e) => {
-    const touch = e.touches[0];
-    setContextMenuPos({ x: touch.clientX, y: touch.clientY });
-    setContextMenuFile(null);
-  });
+  const blankLongPressHandlers = useLongPress(
+    (e) => {
+      const touch = e.touches[0];
+      setContextMenuPos({ x: touch.clientX, y: touch.clientY });
+      setContextMenuFile(null);
+    },
+    { delay: 800 }
+  );
 
   // Inside component before return create two arrays
   const blankMenuItems: MenuItem[] = [
