@@ -620,7 +620,21 @@ export default async function handler(req: Request) {
       ...CACHE_CONTROL_OPTIONS,
     };
 
-    const enrichedMessages = [dynamicSystemMessage, ...messages];
+    // Create a static system message with cache control for better caching
+    const staticSystemMessage = {
+      role: "system" as const,
+      content: staticSystemPrompt,
+      providerOptions: {
+        anthropic: { 
+          cacheControl: { 
+            type: "ephemeral" as const 
+          } 
+        },
+      },
+    };
+
+    // Include both static and dynamic system messages
+    const enrichedMessages = [staticSystemMessage, dynamicSystemMessage, ...messages];
 
     // Log all messages right before model call (as per user preference)
     enrichedMessages.forEach((msg, index) => {
@@ -631,7 +645,7 @@ export default async function handler(req: Request) {
 
     const result = streamText({
       model: selectedModel,
-      system: staticSystemPrompt,
+      // Remove system parameter since we're including it in messages
       messages: enrichedMessages,
       tools: {
         launchApp: {
