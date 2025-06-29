@@ -1722,7 +1722,12 @@ async function handleGetUsers(requestId) {
     }
 
     const usersData = await redis.mget(...keys);
-    const users = usersData.map((user) => user).filter(Boolean);
+    const users = usersData
+      .map((userData) => {
+        if (!userData) return null;
+        return parseUserData(userData);
+      })
+      .filter(Boolean);
 
     return new Response(JSON.stringify({ users }), {
       headers: { "Content-Type": "application/json" },
