@@ -1804,14 +1804,24 @@ export function ControlPanelsAppComponent({
               setVerifyDialogOpen(false);
             }
           }}
-          // Login props
-                     onLogin={async (_username: string, password: string) => {
-             await handleVerifyTokenSubmit(password, true);
-           }}
-          loginUsernameInput={verifyUsernameInput}
-          onLoginUsernameInputChange={setVerifyUsernameInput}
-          loginPasswordInput={verifyPasswordInput}
-          onLoginPasswordInputChange={setVerifyPasswordInput}
+          // Login props - use separate state for general login vs token verification
+          onLogin={async (username: string, password: string) => {
+            // Set the verification username to the entered username for login
+            setVerifyUsernameInput(username);
+            await handleVerifyTokenSubmit(password, true);
+          }}
+          loginUsernameInput={isUsernameDialogOpen ? "" : verifyUsernameInput}
+          onLoginUsernameInputChange={(value) => {
+            if (!isUsernameDialogOpen) {
+              setVerifyUsernameInput(value);
+            }
+          }}
+          loginPasswordInput={isUsernameDialogOpen ? "" : verifyPasswordInput}
+          onLoginPasswordInputChange={(value) => {
+            if (!isUsernameDialogOpen) {
+              setVerifyPasswordInput(value);
+            }
+          }}
           // Sign up props
           onSignUp={submitUsernameDialog}
           signUpUsername={newUsername}
@@ -1821,10 +1831,10 @@ export function ControlPanelsAppComponent({
           // Common props
           isLoading={isSettingUsername || isVerifyingToken}
           error={usernameError || verifyError}
-                     onErrorChange={(error) => {
-             setUsernameError(error);
-             setVerifyError(error);
-           }}
+          onErrorChange={(error) => {
+            setUsernameError(error);
+            setVerifyError(error);
+          }}
           initialTab={isUsernameDialogOpen ? "signup" : "login"}
         />
         <InputDialog
