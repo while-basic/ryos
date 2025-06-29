@@ -848,18 +848,32 @@ export const useChatsStore = create<ChatsStoreState>()(
           members: string[] = []
         ) => {
           const username = get().username;
-          const authToken = get().authToken;
+          let authToken = get().authToken;
 
           if (!username) {
             return { ok: false, error: "Username required" };
           }
 
+          console.log("[ChatsStore] Creating room:", { 
+            type, 
+            name, 
+            members, 
+            username, 
+            hasAuthToken: !!authToken,
+            authTokenLength: authToken?.length 
+          });
+
           if (!authToken) {
+            console.log("[ChatsStore] No auth token found, attempting to generate one...");
             // Try to ensure auth token exists
             const tokenResult = await get().ensureAuthToken();
             if (!tokenResult.ok) {
-              return { ok: false, error: "Authentication required" };
+              console.error("[ChatsStore] Failed to generate auth token:", tokenResult.error);
+              return { ok: false, error: "Authentication required - please refresh the page and try again" };
             }
+            // Get the updated auth token after generation
+            authToken = get().authToken;
+            console.log("[ChatsStore] Auth token generated successfully, length:", authToken?.length);
           }
 
           try {
@@ -872,9 +886,16 @@ export const useChatsStore = create<ChatsStoreState>()(
 
             const headers: HeadersInit = {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${get().authToken}`,
+              Authorization: `Bearer ${authToken}`,
               "X-Username": username,
             };
+
+            console.log("[ChatsStore] Sending createRoom request with:", {
+              url: "/api/chat-rooms?action=createRoom",
+              authHeaderPresent: !!headers.Authorization,
+              usernameHeader: headers["X-Username"],
+              payload
+            });
 
             const response = await makeAuthenticatedRequest(
               "/api/chat-rooms?action=createRoom",
@@ -890,6 +911,11 @@ export const useChatsStore = create<ChatsStoreState>()(
               const errorData = await response.json().catch(() => ({
                 error: `HTTP error! status: ${response.status}`,
               }));
+              console.error("[ChatsStore] Create room failed:", {
+                status: response.status,
+                error: errorData,
+                headers: response.headers
+              });
               return {
                 ok: false,
                 error: errorData.error || "Failed to create room",
@@ -898,6 +924,7 @@ export const useChatsStore = create<ChatsStoreState>()(
 
             const data = await response.json();
             if (data.room) {
+              console.log("[ChatsStore] Room created successfully:", data.room.id);
               // Room will be added via Pusher update, so we don't need to manually add it
               return { ok: true, roomId: data.room.id };
             }
@@ -1037,6 +1064,8 @@ export const useChatsStore = create<ChatsStoreState>()(
             return { ok: false, error: "Username cannot be empty" };
           }
 
+          console.log("[ChatsStore] Creating user:", trimmedUsername);
+
           try {
             const response = await fetch("/api/chat-rooms?action=createUser", {
               method: "POST",
@@ -1048,6 +1077,7 @@ export const useChatsStore = create<ChatsStoreState>()(
               const errorData = await response.json().catch(() => ({
                 error: `HTTP error! status: ${response.status}`,
               }));
+              console.error("[ChatsStore] Create user failed:", response.status, errorData);
               return {
                 ok: false,
                 error: errorData.error || "Failed to create user",
@@ -1057,12 +1087,19 @@ export const useChatsStore = create<ChatsStoreState>()(
             const data = await response.json();
             if (data.user) {
               set({ username: data.user.username });
+              console.log("[ChatsStore] User created successfully:", data.user.username);
 
               if (data.token) {
                 set({ authToken: data.token });
                 saveAuthTokenToRecovery(data.token);
                 // Save initial token creation time
                 saveTokenRefreshTime(data.user.username);
+                console.log("[ChatsStore] Auth token received and stored:", {
+                  tokenLength: data.token.length,
+                  tokenPrefix: data.token.substring(0, 10) + "..."
+                });
+              } else {
+                console.warn("[ChatsStore] WARNING: No auth token received from server for new user!");
               }
 
               return { ok: true };

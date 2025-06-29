@@ -1722,8 +1722,28 @@ async function handleGetUsers(requestId) {
     }
 
     const usersData = await redis.mget(...keys);
-    const users = usersData.map((user) => user).filter(Boolean);
+    logInfo(requestId, `Raw user data types: ${usersData.map(u => typeof u).join(', ')}`);
+    
+    const users = usersData
+      .map((user, index) => {
+        if (!user) return null;
+        // Parse user data if it's a string
+        if (typeof user === "string") {
+          try {
+            const parsed = JSON.parse(user);
+            logInfo(requestId, `Parsed user ${index}: ${parsed.username}`);
+            return parsed;
+          } catch (e) {
+            logError(requestId, `Failed to parse user data at index ${index}:`, e);
+            return null;
+          }
+        }
+        logInfo(requestId, `User ${index} is already an object: ${user.username}`);
+        return user;
+      })
+      .filter(Boolean); // Remove null values
 
+    logInfo(requestId, `Returning ${users.length} parsed users`);
     return new Response(JSON.stringify({ users }), {
       headers: { "Content-Type": "application/json" },
     });

@@ -63,13 +63,13 @@ export function CreateRoomDialog({
       if (response.ok) {
         const data = await response.json();
         const usersList = data.users || [];
-        // Filter out current user and parse user data
-        const parsedUsers = usersList
-          .map((u: string | User) =>
-            typeof u === "string" ? JSON.parse(u) : u
-          )
+        // Filter out current user - users are already parsed by the API
+        const filteredUsers = usersList
           .filter((u: User) => u.username !== currentUsername?.toLowerCase());
-        setUsers(parsedUsers);
+        setUsers(filteredUsers);
+        console.log(`Fetched ${filteredUsers.length} users for search`);
+      } else {
+        console.error("Failed to fetch users:", response.status, response.statusText);
       }
     } catch (error) {
       console.error("Failed to fetch users:", error);

@@ -8,13 +8,49 @@ export function useTokenRefresh() {
   const checkAndRefreshTokenIfNeeded = useChatsStore(
     (state) => state.checkAndRefreshTokenIfNeeded
   );
+  const ensureAuthToken = useChatsStore((state) => state.ensureAuthToken);
   const username = useChatsStore((state) => state.username);
   const authToken = useChatsStore((state) => state.authToken);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Only run if we have both username and token
+    // If we have a username but no token, try to generate one
+    if (username && !authToken) {
+      console.log("[useTokenRefresh] User has no auth token, attempting to generate one...");
+      ensureAuthToken().then((result) => {
+        if (result.ok) {
+          console.log("[useTokenRefresh] Auth token generated successfully");
+        } else {
+          console.error("[useTokenRefresh] Failed to generate auth token:", result.error);
+          // If token generation fails due to 409 (already exists), try to fetch it
+          if (result.error?.includes("already exists")) {
+            console.log("[useTokenRefresh] Token exists on server but not locally, attempting force regeneration...");
+            // Try to force regenerate the token
+            fetch("/api/chat-rooms?action=generateToken", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username, force: true }),
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.token) {
+                  console.log("[useTokenRefresh] Force regenerated token successfully");
+                  // Manually set the token since we're outside the store
+                  const { setAuthToken } = useChatsStore.getState();
+                  setAuthToken(data.token);
+                }
+              })
+              .catch(err => {
+                console.error("[useTokenRefresh] Failed to force regenerate token:", err);
+              });
+          }
+        }
+      });
+      return;
+    }
+
+    // Only run refresh checks if we have both username and token
     if (!username || !authToken) {
       return;
     }
@@ -45,7 +81,7 @@ export function useTokenRefresh() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [username, authToken, checkAndRefreshTokenIfNeeded]);
+  }, [username, authToken, checkAndRefreshTokenIfNeeded, ensureAuthToken]);
 }
 
 // Hook to get the current token age
