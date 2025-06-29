@@ -102,9 +102,10 @@ export function ChatsAppComponent({
     isVerifyDialogOpen,
     setVerifyDialogOpen,
 
-    verifyPasswordInput,
-    setVerifyPasswordInput,
-    verifyUsernameInput,
+    loginFormUsername,
+    setLoginFormUsername,
+    loginFormPassword,
+    setLoginFormPassword,
     setVerifyUsernameInput,
     isVerifyingToken,
     verifyError,
@@ -377,9 +378,10 @@ export function ChatsAppComponent({
         isVerifyDialogOpen={isVerifyDialogOpen}
         setVerifyDialogOpen={setVerifyDialogOpen}
 
-        verifyPasswordInput={verifyPasswordInput}
-        setVerifyPasswordInput={setVerifyPasswordInput}
-        verifyUsernameInput={verifyUsernameInput}
+        loginFormUsername={loginFormUsername}
+        setLoginFormUsername={setLoginFormUsername}
+        loginFormPassword={loginFormPassword}
+        setLoginFormPassword={setLoginFormPassword}
         setVerifyUsernameInput={setVerifyUsernameInput}
         isVerifyingToken={isVerifyingToken}
         verifyError={verifyError}

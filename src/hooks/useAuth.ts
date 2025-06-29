@@ -13,6 +13,10 @@ export function useAuth() {
   const [isSettingUsername, setIsSettingUsername] = useState(false);
   const [usernameError, setUsernameError] = useState<string | null>(null);
 
+  // Dedicated login form states (separate from signup to prevent re-renders)
+  const [loginFormUsername, setLoginFormUsername] = useState("");
+  const [loginFormPassword, setLoginFormPassword] = useState("");
+
   // Token verification dialog states
   const [isVerifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [verifyTokenInput, setVerifyTokenInput] = useState("");
@@ -285,6 +289,8 @@ export function useAuth() {
     setVerifyDialogOpen(false);
     setNewUsername("");
     setNewPassword("");
+    setLoginFormUsername("");
+    setLoginFormPassword("");
     setVerifyTokenInput("");
     setVerifyPasswordInput("");
     setVerifyUsernameInput("");
@@ -333,6 +339,12 @@ export function useAuth() {
     verifyError,
     setVerifyError,
     handleVerifyTokenSubmit,
+
+    // Dedicated login form states
+    loginFormUsername,
+    setLoginFormUsername,
+    loginFormPassword,
+    setLoginFormPassword,
 
     // Password management
     checkHasPassword,

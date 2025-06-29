@@ -276,6 +276,10 @@ export function ControlPanelsAppComponent({
     handleVerifyTokenSubmit,
     newPassword,
     setNewPassword,
+    loginFormUsername,
+    setLoginFormUsername,
+    loginFormPassword,
+    setLoginFormPassword,
     verifyPasswordInput,
     setVerifyPasswordInput,
     verifyUsernameInput,
@@ -1804,7 +1808,7 @@ export function ControlPanelsAppComponent({
               setVerifyDialogOpen(false);
             }
           }}
-          // Login props - use same fields, different endpoints based on context
+          // Login props - use dedicated login form states to prevent re-renders
           onLogin={async (username: string, password: string) => {
             if (isUsernameDialogOpen) {
               // Coming from "Create Account" - use general login endpoint
@@ -1815,10 +1819,10 @@ export function ControlPanelsAppComponent({
               await handleVerifyTokenSubmit(password, true);
             }
           }}
-          loginUsernameInput={isUsernameDialogOpen ? newUsername : verifyUsernameInput}
-          onLoginUsernameInputChange={isUsernameDialogOpen ? setNewUsername : setVerifyUsernameInput}
-          loginPasswordInput={isUsernameDialogOpen ? newPassword : verifyPasswordInput}
-          onLoginPasswordInputChange={isUsernameDialogOpen ? setNewPassword : setVerifyPasswordInput}
+          loginUsernameInput={isUsernameDialogOpen ? loginFormUsername : verifyUsernameInput}
+          onLoginUsernameInputChange={isUsernameDialogOpen ? setLoginFormUsername : setVerifyUsernameInput}
+          loginPasswordInput={isUsernameDialogOpen ? loginFormPassword : verifyPasswordInput}
+          onLoginPasswordInputChange={isUsernameDialogOpen ? setLoginFormPassword : setVerifyPasswordInput}
           // Sign up props
           onSignUp={submitUsernameDialog}
           signUpUsername={newUsername}

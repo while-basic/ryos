@@ -38,9 +38,10 @@ interface ChatsMenuBarProps {
   isVerifyDialogOpen: boolean;
   setVerifyDialogOpen: (open: boolean) => void;
 
-  verifyPasswordInput: string;
-  setVerifyPasswordInput: (input: string) => void;
-  verifyUsernameInput: string;
+  loginFormUsername: string;
+  setLoginFormUsername: (input: string) => void;
+  loginFormPassword: string;
+  setLoginFormPassword: (input: string) => void;
   setVerifyUsernameInput: (input: string) => void;
   isVerifyingToken: boolean;
   verifyError: string | null;
@@ -73,9 +74,10 @@ export function ChatsMenuBar({
   isVerifyDialogOpen,
   setVerifyDialogOpen,
 
-  verifyPasswordInput,
-  setVerifyPasswordInput,
-  verifyUsernameInput,
+  loginFormUsername,
+  setLoginFormUsername,
+  loginFormPassword,
+  setLoginFormPassword,
   setVerifyUsernameInput,
   isVerifyingToken,
   verifyError,
@@ -401,14 +403,16 @@ export function ChatsMenuBar({
         onOpenChange={(open: boolean) => {
           setVerifyDialogOpen(open);
         }}
-        // Login props
-                 onLogin={async (_username: string, password: string) => {
-           await handleVerifyTokenSubmit(password, true);
-         }}
-        loginUsernameInput={verifyUsernameInput}
-        onLoginUsernameInputChange={setVerifyUsernameInput}
-        loginPasswordInput={verifyPasswordInput}
-        onLoginPasswordInputChange={setVerifyPasswordInput}
+        // Login props - use dedicated login form states to prevent re-renders
+        onLogin={async (username: string, password: string) => {
+          // Set the verification username to the entered username for login
+          setVerifyUsernameInput(username);
+          await handleVerifyTokenSubmit(password, true);
+        }}
+        loginUsernameInput={loginFormUsername}
+        onLoginUsernameInputChange={setLoginFormUsername}
+        loginPasswordInput={loginFormPassword}
+        onLoginPasswordInputChange={setLoginFormPassword}
         // Sign up props (not used in this component since ChatsAppComponent handles sign up)
         onSignUp={async () => {}}
         signUpUsername=""
