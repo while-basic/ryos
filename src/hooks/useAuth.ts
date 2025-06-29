@@ -13,10 +13,6 @@ export function useAuth() {
   const [isSettingUsername, setIsSettingUsername] = useState(false);
   const [usernameError, setUsernameError] = useState<string | null>(null);
 
-  // General login states (for login tab in auth dialog)
-  const [loginUsername, setLoginUsername] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-
   // Token verification dialog states
   const [isVerifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [verifyTokenInput, setVerifyTokenInput] = useState("");
@@ -278,74 +274,7 @@ export function useAuth() {
     [username, authToken]
   );
 
-  // General login functionality
-  const handleGeneralLogin = useCallback(
-    async (username: string, password: string) => {
-      if (!username.trim() || !password.trim()) {
-        setUsernameError("Username and password are required");
-        return;
-      }
 
-      setIsSettingUsername(true);
-      setUsernameError(null);
-
-      // If we have a different user already logged in, clear their data first
-      if (username && username !== username.trim()) {
-        console.log(
-          "[useAuth] Clearing old user data for different user login:",
-          username,
-          "->",
-          username.trim()
-        );
-        await logout();
-      }
-
-      try {
-        // Authenticate with password
-        const response = await fetch(
-          "/api/chat-rooms?action=authenticateWithPassword",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username: username.trim(),
-              password: password.trim(),
-            }),
-          }
-        );
-
-        if (!response.ok) {
-          const data = await response.json();
-          setUsernameError(data.error || "Invalid username or password");
-          return;
-        }
-
-        const result = await response.json();
-        if (result.token) {
-          setAuthToken(result.token);
-          // Set username from the response to ensure it's properly stored
-          if (result.username) {
-            setUsername(result.username);
-          }
-          toast.success("Success", {
-            description: "Logged in successfully",
-          });
-          setIsUsernameDialogOpen(false);
-          setVerifyDialogOpen(false);
-          setLoginUsername("");
-          setLoginPassword("");
-        }
-      } catch (err) {
-        console.error("[useAuth] Error during general login:", err);
-        setUsernameError("Network error while logging in");
-      } finally {
-        setIsSettingUsername(false);
-      }
-    },
-    [setAuthToken, setUsername, logout]
-  );
 
   // Logout functionality
   const handleLogout = useCallback(async () => {
@@ -356,8 +285,6 @@ export function useAuth() {
     setVerifyDialogOpen(false);
     setNewUsername("");
     setNewPassword("");
-    setLoginUsername("");
-    setLoginPassword("");
     setVerifyTokenInput("");
     setVerifyPasswordInput("");
     setVerifyUsernameInput("");

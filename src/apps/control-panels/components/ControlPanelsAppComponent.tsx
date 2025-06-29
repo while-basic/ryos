@@ -1804,24 +1804,21 @@ export function ControlPanelsAppComponent({
               setVerifyDialogOpen(false);
             }
           }}
-          // Login props - use separate state for general login vs token verification
+          // Login props - use same fields, different endpoints based on context
           onLogin={async (username: string, password: string) => {
-            // Set the verification username to the entered username for login
-            setVerifyUsernameInput(username);
-            await handleVerifyTokenSubmit(password, true);
-          }}
-          loginUsernameInput={isUsernameDialogOpen ? "" : verifyUsernameInput}
-          onLoginUsernameInputChange={(value) => {
-            if (!isUsernameDialogOpen) {
-              setVerifyUsernameInput(value);
+            if (isUsernameDialogOpen) {
+              // Coming from "Create Account" - use general login endpoint
+              setVerifyUsernameInput(username);
+              await handleVerifyTokenSubmit(password, true);
+            } else {
+              // Coming from token verification dialog - use existing logic
+              await handleVerifyTokenSubmit(password, true);
             }
           }}
-          loginPasswordInput={isUsernameDialogOpen ? "" : verifyPasswordInput}
-          onLoginPasswordInputChange={(value) => {
-            if (!isUsernameDialogOpen) {
-              setVerifyPasswordInput(value);
-            }
-          }}
+          loginUsernameInput={isUsernameDialogOpen ? newUsername : verifyUsernameInput}
+          onLoginUsernameInputChange={isUsernameDialogOpen ? setNewUsername : setVerifyUsernameInput}
+          loginPasswordInput={isUsernameDialogOpen ? newPassword : verifyPasswordInput}
+          onLoginPasswordInputChange={isUsernameDialogOpen ? setNewPassword : setVerifyPasswordInput}
           // Sign up props
           onSignUp={submitUsernameDialog}
           signUpUsername={newUsername}
