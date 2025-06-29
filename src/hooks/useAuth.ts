@@ -329,6 +329,7 @@ export function useAuth() {
     setVerifyUsernameInput,
     isVerifyingToken,
     verifyError,
+    setVerifyError,
     handleVerifyTokenSubmit,
 
     // Password management

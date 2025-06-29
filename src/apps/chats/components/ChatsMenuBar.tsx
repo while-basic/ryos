@@ -14,7 +14,7 @@ import { generateAppShareUrl } from "@/utils/sharedUrl";
 import { useAppStoreShallow } from "@/stores/helpers";
 import { SYNTH_PRESETS } from "@/hooks/useChatSynth";
 import { getPrivateRoomDisplayName } from "@/utils/chat";
-import { LoginDialog } from "@/components/dialogs/LoginDialog";
+import { AuthDialog } from "@/components/dialogs/AuthDialog";
 
 interface ChatsMenuBarProps {
   onClose: () => void;
@@ -37,8 +37,7 @@ interface ChatsMenuBarProps {
   onVerifyToken: () => void;
   isVerifyDialogOpen: boolean;
   setVerifyDialogOpen: (open: boolean) => void;
-  verifyTokenInput: string;
-  setVerifyTokenInput: (input: string) => void;
+
   verifyPasswordInput: string;
   setVerifyPasswordInput: (input: string) => void;
   verifyUsernameInput: string;
@@ -73,8 +72,7 @@ export function ChatsMenuBar({
   onVerifyToken,
   isVerifyDialogOpen,
   setVerifyDialogOpen,
-  verifyTokenInput,
-  setVerifyTokenInput,
+
   verifyPasswordInput,
   setVerifyPasswordInput,
   verifyUsernameInput,
@@ -397,27 +395,31 @@ export function ChatsMenuBar({
         </DropdownMenu>
       </MenuBar>
 
-      {/* Log In Dialog */}
-      <LoginDialog
+      {/* Auth Dialog */}
+      <AuthDialog
         isOpen={isVerifyDialogOpen}
-        onOpenChange={(open) => {
+        onOpenChange={(open: boolean) => {
           setVerifyDialogOpen(open);
         }}
-        onSubmit={handleVerifyTokenSubmit}
-        tokenInput={verifyTokenInput}
-        onTokenInputChange={setVerifyTokenInput}
-        passwordInput={verifyPasswordInput}
-        onPasswordInputChange={setVerifyPasswordInput}
-        usernameInput={verifyUsernameInput}
-        onUsernameInputChange={setVerifyUsernameInput}
+        // Login props
+                 onLogin={async (_username: string, password: string) => {
+           await handleVerifyTokenSubmit(password, true);
+         }}
+        loginUsernameInput={verifyUsernameInput}
+        onLoginUsernameInputChange={setVerifyUsernameInput}
+        loginPasswordInput={verifyPasswordInput}
+        onLoginPasswordInputChange={setVerifyPasswordInput}
+        // Sign up props (not used in this component since ChatsAppComponent handles sign up)
+        onSignUp={async () => {}}
+        signUpUsername=""
+        onSignUpUsernameChange={() => {}}
+        signUpPassword=""
+        onSignUpPasswordChange={() => {}}
+        // Common props
         isLoading={isVerifyingToken}
         error={verifyError}
-        username={username}
-        debugMode={debugMode}
-        onSwitchToSignUp={() => {
-          setVerifyDialogOpen(false);
-          onSetUsername();
-        }}
+        onErrorChange={() => {}}
+        initialTab="login"
       />
     </>
   );
