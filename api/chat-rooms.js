@@ -3009,6 +3009,11 @@ async function handleCheckPassword(username, requestId) {
  */
 const checkRateLimit = async (action, identifier, requestId) => {
   try {
+    // Allow ryo to bypass rate limits
+    if (identifier === "ryo") {
+      return true;
+    }
+
     const key = `${RATE_LIMIT_PREFIX}${action}:${identifier}`;
     const current = await redis.get(key);
 
