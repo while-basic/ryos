@@ -73,7 +73,7 @@ const AVAILABLE_COMMANDS = [
   "chat",
   "echo",
   "whoami",
-  "login",
+  "su",
   "logout",
   "date",
   "vim",
@@ -1696,7 +1696,7 @@ terminal
   about            about terminal
   echo <text>      display text
   whoami           display current user
-  login <user>     log in (or create) user
+  su <user> [pass] switch user / create (optional password)
   logout           log out current user
   date             display current date/time
   cowsay <text>    a talking cow
@@ -2189,43 +2189,77 @@ assistant
         };
       }
 
-      case "login": {
+      case "su": {
         if (args.length === 0) {
           return {
-            output: "usage: login <username>",
+            output: "usage: su <username> [password]",
             isError: true,
           };
         }
 
         const targetUsername = args[0].trim();
-        const tempOutput = `logging in as ${targetUsername}...`;
+        const passwordArg = args[1] ? args[1].trim() : undefined;
+        const tempOutput = `switching to ${targetUsername}...`;
 
-        class LoginHandler {
+        class SuHandler {
           async perform() {
             try {
               const store = useChatsStore.getState();
+
+              // If already that user, nothing to do
               if (store.username === targetUsername) {
-                this.updateOutput(`already logged in as ${targetUsername}`);
+                this.updateOutput(`already user ${targetUsername}`);
                 return;
               }
 
-              // If logged in as another user, logout first
+              // Logout current user if different
               if (store.username && store.username !== targetUsername) {
                 await store.logout();
               }
 
-              const result = await store.createUser(targetUsername);
-              if (result.ok) {
-                this.updateOutput(`logged in as ${targetUsername}`);
+              // If password provided, attempt authentication first
+              if (passwordArg) {
+                const authResp = await fetch(
+                  "/api/chat-rooms?action=authenticateWithPassword",
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      username: targetUsername,
+                      password: passwordArg,
+                    }),
+                  }
+                );
+
+                if (authResp.ok) {
+                  const data = await authResp.json();
+                  if (data.token) {
+                    store.setUsername(targetUsername);
+                    store.setAuthToken(data.token);
+                    this.updateOutput(`logged in as ${targetUsername}`);
+                    return;
+                  }
+                }
+                // fallthrough if auth failed -> will attempt create
+              }
+
+              // Attempt to create user (with or without password)
+              const createResult = await store.createUser(
+                targetUsername,
+                passwordArg
+              );
+
+              if (createResult.ok) {
+                this.updateOutput(`created and logged in as ${targetUsername}`);
               } else {
+                // If creation failed and we didn't succeed auth, show error
                 this.updateOutput(
-                  `login failed: ${result.error || "unknown error"}`
+                  `su failed: ${createResult.error || "unknown error"}`
                 );
               }
             } catch (err) {
-              const errorMsg =
-                err instanceof Error ? err.message : "unknown error";
-              this.updateOutput(`login failed: ${errorMsg}`);
+              const errorMsg = err instanceof Error ? err.message : "unknown error";
+              this.updateOutput(`su failed: ${errorMsg}`);
             }
           }
 
@@ -2243,9 +2277,8 @@ assistant
           }
         }
 
-        // Execute login asynchronously
         setTimeout(() => {
-          new LoginHandler().perform();
+          new SuHandler().perform();
         }, 50);
 
         return { output: tempOutput, isError: false };
