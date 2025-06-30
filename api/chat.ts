@@ -366,9 +366,16 @@ const redis = new Redis({
 
 // Add auth validation function
 const AUTH_TOKEN_PREFIX = "chat:token:";
-const TOKEN_LAST_PREFIX = "chat:token:last:";
 const USER_TTL_SECONDS = 90 * 24 * 60 * 60; // 90 days (for tokens only)
 const TOKEN_GRACE_PERIOD = 365 * 24 * 60 * 60; // 365 days (1 year)
+
+// Helper functions for multi-token support
+const getTokenKey = (token: string) => `${AUTH_TOKEN_PREFIX}${token}`;
+
+const getUsernameForToken = async (token: string) => {
+  if (!token) return null;
+  return await redis.get(getTokenKey(token));
+};
 
 async function validateAuthToken(
   username: string | undefined | null,
@@ -379,25 +386,31 @@ async function validateAuthToken(
   }
 
   const normalizedUsername = username.toLowerCase();
-  // 1) First, try the new token->username mapping
-  const directKey = `${AUTH_TOKEN_PREFIX}${authToken}`;
-  const mappedUsername = await redis.get(directKey);
+  
+  // ---------------------------
+  // 1. Preferred path: token -> username mapping (multi-token support)
+  // ---------------------------
+  const mappedUsername = await getUsernameForToken(authToken);
   if (mappedUsername && String(mappedUsername).toLowerCase() === normalizedUsername) {
-    await redis.expire(directKey, USER_TTL_SECONDS);
+    // Refresh TTL for this token
+    await redis.expire(getTokenKey(authToken), USER_TTL_SECONDS);
     return { valid: true };
   }
 
-  // 2) Fallback to legacy single-token mapping (username -> token)
+  // ---------------------------
+  // 2. Legacy single-token path (username -> token). Keep for backward compat.
+  // ---------------------------
   const legacyKey = `${AUTH_TOKEN_PREFIX}${normalizedUsername}`;
   const storedToken = await redis.get(legacyKey);
-
   if (storedToken && storedToken === authToken) {
     await redis.expire(legacyKey, USER_TTL_SECONDS);
     return { valid: true };
   }
 
-  // Token not found or doesn't match - check if it's in grace period
-  const lastTokenKey = `${TOKEN_LAST_PREFIX}${normalizedUsername}`;
+  // ---------------------------
+  // 3. Grace-period path – allow refresh of recently expired tokens
+  // ---------------------------
+  const lastTokenKey = `${AUTH_TOKEN_PREFIX}last:${normalizedUsername}`;
   const lastTokenData = await redis.get(lastTokenKey);
 
   if (lastTokenData) {
@@ -430,11 +443,11 @@ async function validateAuthToken(
           { ex: USER_TTL_SECONDS + TOKEN_GRACE_PERIOD }
         );
 
-        // Store the new token
+        // Store the new token (legacy single-token mapping)
         await redis.set(legacyKey, newToken, { ex: USER_TTL_SECONDS });
 
         // Also store the mapping for multi-token support
-        await redis.set(`${AUTH_TOKEN_PREFIX}${newToken}`, normalizedUsername, { ex: USER_TTL_SECONDS });
+        await redis.set(getTokenKey(newToken), normalizedUsername, { ex: USER_TTL_SECONDS });
 
         return { valid: true, newToken };
       }
