@@ -2424,6 +2424,108 @@ assistant
         };
       }
 
+      case "login": {
+        if (args.length === 0) {
+          return {
+            output: "usage: login <username>",
+            isError: true,
+          };
+        }
+
+        const targetUsername = args[0].trim();
+        const tempOutput = `logging in as ${targetUsername}...`;
+
+        class LoginHandler {
+          async perform() {
+            try {
+              const store = useChatsStore.getState();
+              if (store.username === targetUsername) {
+                this.updateOutput(`already logged in as ${targetUsername}`);
+                return;
+              }
+
+              // If logged in as another user, logout first
+              if (store.username && store.username !== targetUsername) {
+                await store.logout();
+              }
+
+              const result = await store.createUser(targetUsername);
+              if (result.ok) {
+                this.updateOutput(`logged in as ${targetUsername}`);
+              } else {
+                this.updateOutput(
+                  `login failed: ${result.error || "unknown error"}`
+                );
+              }
+            } catch (err) {
+              const errorMsg =
+                err instanceof Error ? err.message : "unknown error";
+              this.updateOutput(`login failed: ${errorMsg}`);
+            }
+          }
+
+          updateOutput(content: string) {
+            setCommandHistory((prev) => {
+              const last = prev[prev.length - 1];
+              if (last.output === tempOutput) {
+                return [
+                  ...prev.slice(0, -1),
+                  { ...last, output: content },
+                ];
+              }
+              return prev;
+            });
+          }
+        }
+
+        // Execute login asynchronously
+        setTimeout(() => {
+          new LoginHandler().perform();
+        }, 50);
+
+        return { output: tempOutput, isError: false };
+      }
+
+      case "logout": {
+        if (!username) {
+          return { output: "not logged in", isError: true };
+        }
+
+        const tempOutput = "logging out...";
+
+        class LogoutHandler {
+          async perform() {
+            try {
+              await useChatsStore.getState().logout();
+              this.updateOutput("logged out");
+            } catch (err) {
+              const errorMsg =
+                err instanceof Error ? err.message : "unknown error";
+              this.updateOutput(`logout failed: ${errorMsg}`);
+            }
+          }
+
+          updateOutput(content: string) {
+            setCommandHistory((prev) => {
+              const last = prev[prev.length - 1];
+              if (last.output === tempOutput) {
+                return [
+                  ...prev.slice(0, -1),
+                  { ...last, output: content },
+                ];
+              }
+              return prev;
+            });
+          }
+        }
+
+        setTimeout(() => {
+          new LogoutHandler().perform();
+        }, 50);
+
+        return { output: tempOutput, isError: false };
+      }
+
       default:
         return {
           output: `command not found: ${cmd}. type 'help' for a list of available commands.`,
