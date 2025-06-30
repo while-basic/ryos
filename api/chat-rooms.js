@@ -79,6 +79,9 @@ const PASSWORD_HASH_PREFIX = "chat:password:";
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_BCRYPT_ROUNDS = 10;
 
+// Reserved usernames that cannot be registered by ordinary users
+const RESERVED_USERNAMES = ["ryo"];
+
 /**
  * Hash a password using bcrypt
  * @param {string} password - The plaintext password
@@ -744,7 +747,6 @@ export async function POST(request) {
       "joinRoom",
       "leaveRoom",
       "switchRoom",
-      "generateToken",
       "refreshToken",
       "authenticateWithPassword", // New: password-based auth
     ];
@@ -757,6 +759,7 @@ export async function POST(request) {
       "resetUserCounts",
       "verifyToken",
       "setPassword", // New: set password for existing user
+      "generateToken", // Generating/reissuing tokens now requires authentication
     ];
 
     // Check authentication for protected actions
@@ -770,17 +773,11 @@ export async function POST(request) {
         body.username &&
         body.username.toLowerCase() !== username?.toLowerCase()
       ) {
-        const allowedRyoProxy =
-          action === "sendMessage" &&
-          body.username.toLowerCase() === "ryo" &&
-          username;
-        if (!allowedRyoProxy) {
-          logInfo(
-            requestId,
-            `Auth mismatch: body username (${body.username}) != auth username (${username})`
-          );
-          return createErrorResponse("Username mismatch", 401);
-        }
+        logInfo(
+          requestId,
+          `Auth mismatch: body username (${body.username}) != auth username (${username})`
+        );
+        return createErrorResponse("Username mismatch", 401);
       }
 
       // Validate authentication
