@@ -79,6 +79,50 @@ const PASSWORD_HASH_PREFIX = "chat:password:";
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_BCRYPT_ROUNDS = 10;
 
+// ------------------------------
+// Input-validation / sanitization helpers
+// ------------------------------
+
+// Usernames: 3-30 characters, letters, numbers, underscore or hyphen
+const USERNAME_REGEX = /^[a-z0-9_-]{3,30}$/i;
+
+// Room IDs generated internally are base-36 alphanumerics; still validate when received from client
+const ROOM_ID_REGEX = /^[a-z0-9]+$/i;
+
+/** Simple HTML-escaping to mitigate XSS when rendering messages */
+const escapeHTML = (str = "") =>
+  str.replace(/[&<>"']/g, (ch) =>
+    ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    })[ch]
+  );
+
+/** Validate a username string. Throws on failure. */
+function assertValidUsername(username, requestId) {
+  if (!USERNAME_REGEX.test(username)) {
+    logInfo(
+      requestId,
+      `Invalid username format: ${username}. Must match ${USERNAME_REGEX}`
+    );
+    throw new Error("Invalid username format");
+  }
+}
+
+/** Validate a roomId string. Throws on failure. */
+function assertValidRoomId(roomId, requestId) {
+  if (!ROOM_ID_REGEX.test(roomId)) {
+    logInfo(
+      requestId,
+      `Invalid roomId format: ${roomId}. Must match ${ROOM_ID_REGEX}`
+    );
+    throw new Error("Invalid room ID format");
+  }
+}
+
 /**
  * Hash a password using bcrypt
  * @param {string} password - The plaintext password
@@ -499,6 +543,15 @@ async function ensureUserExists(username, requestId) {
     throw new Error(
       `Username must be ${MAX_USERNAME_LENGTH} characters or less`
     );
+  }
+
+  // Validate allowed characters
+  if (!USERNAME_REGEX.test(username)) {
+    logInfo(
+      requestId,
+      `User check failed: Invalid username format: ${username}`
+    );
+    throw new Error("Invalid username format");
   }
 
   // Attempt to get existing user
@@ -935,6 +988,7 @@ async function handleGetRooms(request, requestId) {
 async function handleGetRoom(roomId, requestId) {
   logInfo(requestId, `Fetching room: ${roomId}`);
   try {
+    assertValidRoomId(roomId, requestId);
     const roomRaw = await redis.get(`${CHAT_ROOM_PREFIX}${roomId}`);
     const roomObj =
       typeof roomRaw === "string"
@@ -1253,6 +1307,13 @@ async function handleGetBulkMessages(roomIds, requestId) {
   );
 
   try {
+    // Validate all room IDs
+    for (const id of roomIds) {
+      if (!ROOM_ID_REGEX.test(id)) {
+        return createErrorResponse("Invalid room ID format", 400);
+      }
+    }
+
     // Verify all rooms exist first
     const roomExistenceChecks = await Promise.all(
       roomIds.map((roomId) => redis.exists(`${CHAT_ROOM_PREFIX}${roomId}`))
@@ -1330,6 +1391,7 @@ async function handleGetMessages(roomId, requestId) {
   logInfo(requestId, `Fetching messages for room: ${roomId}`);
 
   try {
+    assertValidRoomId(roomId, requestId);
     const roomExists = await redis.exists(`${CHAT_ROOM_PREFIX}${roomId}`);
 
     if (!roomExists) {
@@ -1505,6 +1567,13 @@ async function handleJoinRoom(data, requestId) {
     return createErrorResponse("Room ID and username are required", 400);
   }
 
+  try {
+    assertValidUsername(username, requestId);
+    assertValidRoomId(roomId, requestId);
+  } catch (e) {
+    return createErrorResponse(e.message, 400);
+  }
+
   logInfo(requestId, `User ${username} joining room ${roomId}`);
   try {
     // Use Promise.all for concurrent checks
@@ -1576,6 +1645,13 @@ async function handleLeaveRoom(data, requestId) {
       username,
     });
     return createErrorResponse("Room ID and username are required", 400);
+  }
+
+  try {
+    assertValidUsername(username, requestId);
+    assertValidRoomId(roomId, requestId);
+  } catch (e) {
+    return createErrorResponse(e.message, 400);
   }
 
   logInfo(requestId, `User ${username} leaving room ${roomId}`);
@@ -1981,20 +2057,24 @@ async function handleSendMessage(data, requestId) {
   const { roomId, username: originalUsername, content: originalContent } = data;
   const username = originalUsername?.toLowerCase(); // Normalize
 
-  if (!roomId || !username || !originalContent) {
-    logInfo(requestId, "Message sending failed: Missing required fields", {
-      roomId,
-      username,
-      hasContent: !!originalContent,
-    });
-    return createErrorResponse(
-      "Room ID, username, and content are required",
-      400
-    );
+  // Validate identifiers early
+  try {
+    assertValidUsername(username, requestId);
+    assertValidRoomId(roomId, requestId);
+  } catch (e) {
+    return createErrorResponse(e.message, 400);
   }
 
-  // Filter profanity from message content AFTER checking username profanity
-  const content = filter.clean(originalContent);
+  if (!originalContent) {
+    logInfo(requestId, "Message sending failed: Content is required", {
+      roomId,
+      username,
+    });
+    return createErrorResponse("Content is required", 400);
+  }
+
+  // Filter profanity then escape HTML to mitigate XSS
+  const content = escapeHTML(filter.clean(originalContent));
 
   logInfo(requestId, `Sending message in room ${roomId} from user ${username}`);
 
@@ -2262,6 +2342,14 @@ async function handleSwitchRoom(data, requestId) {
   if (!username) {
     logInfo(requestId, "Room switch failed: Username is required");
     return createErrorResponse("Username is required", 400);
+  }
+
+  // Validate room IDs format if provided
+  try {
+    if (previousRoomId) assertValidRoomId(previousRoomId, requestId);
+    if (nextRoomId) assertValidRoomId(nextRoomId, requestId);
+  } catch (e) {
+    return createErrorResponse(e.message, 400);
   }
 
   // Nothing to do if IDs are the same (including both null)
