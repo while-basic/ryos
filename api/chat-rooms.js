@@ -254,12 +254,27 @@ const validateAuth = async (
     return { valid: false };
   }
 
-  if (storedToken !== token) {
-    logInfo(
-      requestId,
-      `Auth validation failed: Invalid token for user ${username}`
-    );
-    return { valid: false };
+  // Perform timing-safe comparison
+  try {
+    const a = Buffer.from(storedToken);
+    const b = Buffer.from(token);
+    // Length check must pass before timingSafeEqual
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      logInfo(
+        requestId,
+        `Auth validation failed: Invalid token for user ${username}`
+      );
+      return { valid: false };
+    }
+  } catch (cmpErr) {
+    // Fallback (should not happen)
+    if (storedToken !== token) {
+      logInfo(
+        requestId,
+        `Auth validation failed (fallback): Invalid token for user ${username}`
+      );
+      return { valid: false };
+    }
   }
 
   // Refresh token expiration on successful validation
@@ -482,7 +497,8 @@ async function getDetailedRooms() {
 
 // Helper functions
 const generateId = () => {
-  return Math.random().toString(36).substring(2, 15);
+  // 128-bit random identifier encoded as hex (32 chars)
+  return crypto.randomBytes(16).toString("hex");
 };
 
 const getCurrentTimestamp = () => {
@@ -786,6 +802,24 @@ export async function POST(request) {
   try {
     // Parse JSON body
     const body = await request.json();
+
+    // ---------------- Rate limiting ----------------
+    const sensitiveRateLimitActions = new Set([
+      "generateToken",
+      "refreshToken",
+      "authenticateWithPassword",
+      "setPassword",
+      "createUser",
+    ]);
+
+    if (sensitiveRateLimitActions.has(action)) {
+      // prefer username if available, else client IP
+      const identifier = (body.username || request.headers.get("x-username") || request.headers.get("x-forwarded-for") || "anon").toLowerCase();
+      const allowed = await checkRateLimit(action, identifier, requestId);
+      if (!allowed) {
+        return createErrorResponse("Too many requests, please slow down", 429);
+      }
+    }
 
     // Declare username and token at function level
     let username = null;
