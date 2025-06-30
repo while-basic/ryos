@@ -79,9 +79,6 @@ const PASSWORD_HASH_PREFIX = "chat:password:";
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_BCRYPT_ROUNDS = 10;
 
-// Reserved usernames that cannot be registered by ordinary users
-const RESERVED_USERNAMES = ["ryo"];
-
 /**
  * Hash a password using bcrypt
  * @param {string} password - The plaintext password
@@ -773,11 +770,18 @@ export async function POST(request) {
         body.username &&
         body.username.toLowerCase() !== username?.toLowerCase()
       ) {
-        logInfo(
-          requestId,
-          `Auth mismatch: body username (${body.username}) != auth username (${username})`
-        );
-        return createErrorResponse("Username mismatch", 401);
+        const allowedRyoProxy =
+          action === "sendMessage" &&
+          body.username.toLowerCase() === "ryo" &&
+          username; // any authenticated user may proxy as ryo
+
+        if (!allowedRyoProxy) {
+          logInfo(
+            requestId,
+            `Auth mismatch: body username (${body.username}) != auth username (${username})`
+          );
+          return createErrorResponse("Username mismatch", 401);
+        }
       }
 
       // Validate authentication
