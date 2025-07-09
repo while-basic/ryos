@@ -44,8 +44,16 @@ export function Desktop({
   // ------------------ Mobile long-press support ------------------
   // Show the desktop context menu after the user holds for 500 ms.
   const longPressHandlers = useLongPress((e) => {
+    // Check if the target is within an icon - if so, don't show desktop context menu
+    const target = e.target as HTMLElement;
+    const iconContainer = target.closest('[data-desktop-icon]');
+    if (iconContainer) {
+      return; // Let the icon handle its own context menu
+    }
+    
     const touch = e.touches[0];
     setContextMenuPos({ x: touch.clientX, y: touch.clientY });
+    setContextMenuAppId(null);
   });
 
   // Add visibility change and focus handlers to resume video playback
