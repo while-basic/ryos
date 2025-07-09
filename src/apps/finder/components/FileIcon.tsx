@@ -36,6 +36,9 @@ export function FileIcon({
   const contentRef = useRef(content);
   const contentUrlRef = useRef(contentUrl);
 
+  // Track the timestamp of the last touch end for double-tap detection on touch devices
+  const lastTapRef = useRef<number>(0);
+
   // Track props with refs to avoid dependency issues
   useEffect(() => {
     contentRef.current = content;
@@ -181,10 +184,28 @@ export function FileIcon({
     );
   };
 
+  // ----------------------- Touch double-tap handler -----------------------
+  const handleTouchEnd = (
+    e: React.TouchEvent<HTMLDivElement>
+  ) => {
+    // Only consider touch interactions with a single contact point
+    if (e.touches.length > 0) return;
+
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      // Treat as a double tap → invoke onDoubleClick callback if provided
+      onDoubleClick?.(e as unknown as React.MouseEvent<HTMLDivElement>);
+      lastTapRef.current = 0; // reset
+    } else {
+      lastTapRef.current = now;
+    }
+  };
+
   return (
     <div
       className={`flex flex-col items-center justify-start cursor-pointer gap-1 ${sizes.container} ${className}`}
       onDoubleClick={onDoubleClick}
+      onTouchEnd={handleTouchEnd}
       onClick={(e) => {
         playClick();
         onClick?.(e);
