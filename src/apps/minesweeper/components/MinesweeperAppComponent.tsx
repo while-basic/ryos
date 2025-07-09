@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { AppProps } from "../../base/types";
 import { WindowFrame } from "@/components/layout/WindowFrame";
 import { MinesweeperMenuBar } from "./MinesweeperMenuBar";
@@ -25,17 +25,20 @@ function useLongPress(
   onClick: () => void,
   { shouldPreventDefault = false, delay = 500 } = {}
 ) {
-  const [longPressTriggered, setLongPressTriggered] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
+  const longPressTriggeredRef = useRef(false);
 
   const start = useCallback(
     (e: React.TouchEvent | React.MouseEvent) => {
       if (shouldPreventDefault && e.target) {
         e.preventDefault();
       }
+      // Reset the flag when starting a new gesture
+      longPressTriggeredRef.current = false;
+      
       const timer = setTimeout(() => {
         onLongPress(e);
-        setLongPressTriggered(true);
+        longPressTriggeredRef.current = true;
       }, delay);
       setTimeoutId(timer);
     },
@@ -48,12 +51,18 @@ function useLongPress(
         clearTimeout(timeoutId);
       }
       setTimeoutId(undefined);
-      if (shouldTriggerClick && !longPressTriggered && onClick) {
+      
+      // Use ref to ensure we have the most current value
+      if (shouldTriggerClick && !longPressTriggeredRef.current && onClick) {
         onClick();
       }
-      setLongPressTriggered(false);
+      
+      // Reset after a small delay to prevent race conditions
+      setTimeout(() => {
+        longPressTriggeredRef.current = false;
+      }, 100);
     },
-    [onClick, timeoutId, longPressTriggered]
+    [onClick, timeoutId]
   );
 
   return {
@@ -110,6 +119,16 @@ function Cell({
     }
   };
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    // On mobile, prevent context menu since we use long press for flagging
+    if (isMobileDevice()) {
+      e.preventDefault();
+      return;
+    }
+    // On desktop, allow right-click for flagging
+    onCellRightClick(e, rowIndex, colIndex);
+  };
+
   return (
     <button
       key={`${rowIndex}-${colIndex}`}
@@ -120,7 +139,7 @@ function Cell({
             : "bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-gray-800 border-b-gray-800 hover:bg-[#d0d0d0] active:border active:border-gray-600"
         }`}
       {...longPressHandlers}
-      onContextMenu={(e) => onCellRightClick(e, rowIndex, colIndex)}
+      onContextMenu={handleContextMenu}
       onDoubleClick={handleDoubleClick}
       disabled={disabled}
     >
