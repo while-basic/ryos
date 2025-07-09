@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/dialogs/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { helpItems, appMetadata } from "..";
 import { useSound, Sounds } from "@/hooks/useSound";
+import { isMobileDevice } from "@/utils/device";
 
 const BOARD_SIZE = 9;
 const MINES_COUNT = 10;
@@ -87,13 +88,22 @@ function Cell({
 }: CellProps) {
   const longPressHandlers = useLongPress(
     (e) => onCellRightClick(e, rowIndex, colIndex),
-    () => onCellClick(rowIndex, colIndex, false),
+    () => {
+      // On mobile, if this is a revealed cell with a number, trigger the reveal adjacent behavior
+      if (isMobileDevice() && cell.isRevealed && cell.neighborMines > 0) {
+        onCellClick(rowIndex, colIndex, true);
+      } else {
+        // Otherwise, regular click behavior
+        onCellClick(rowIndex, colIndex, false);
+      }
+    },
     { delay: 500 }
   );
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (cell.isRevealed && cell.neighborMines > 0) {
+    // Only handle double-click on desktop (mobile uses single tap)
+    if (!isMobileDevice() && cell.isRevealed && cell.neighborMines > 0) {
       onCellClick(rowIndex, colIndex, true);
     }
   };
