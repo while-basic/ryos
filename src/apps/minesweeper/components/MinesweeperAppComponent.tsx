@@ -23,7 +23,7 @@ type CellContent = {
 function useLongPress(
   onLongPress: (e: React.TouchEvent | React.MouseEvent) => void,
   onClick: () => void,
-  { shouldPreventDefault = true, delay = 500 } = {}
+  { shouldPreventDefault = false, delay = 500 } = {}
 ) {
   const [longPressTriggered, setLongPressTriggered] = useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
@@ -86,18 +86,20 @@ function Cell({
   onCellRightClick,
   disabled,
 }: CellProps) {
+  const handleClick = () => {
+    // On mobile, if this is a revealed cell with a number, trigger the reveal adjacent behavior
+    if (isMobileDevice() && cell.isRevealed && cell.neighborMines > 0) {
+      onCellClick(rowIndex, colIndex, true);
+    } else {
+      // Otherwise, regular click behavior
+      onCellClick(rowIndex, colIndex, false);
+    }
+  };
+
   const longPressHandlers = useLongPress(
     (e) => onCellRightClick(e, rowIndex, colIndex),
-    () => {
-      // On mobile, if this is a revealed cell with a number, trigger the reveal adjacent behavior
-      if (isMobileDevice() && cell.isRevealed && cell.neighborMines > 0) {
-        onCellClick(rowIndex, colIndex, true);
-      } else {
-        // Otherwise, regular click behavior
-        onCellClick(rowIndex, colIndex, false);
-      }
-    },
-    { delay: 500 }
+    handleClick,
+    { delay: 500, shouldPreventDefault: false }
   );
 
   const handleDoubleClick = (e: React.MouseEvent) => {
