@@ -39,6 +39,7 @@ export function Desktop({
     x: number;
     y: number;
   } | null>(null);
+  const [contextMenuAppId, setContextMenuAppId] = useState<string | null>(null);
 
   // ------------------ Mobile long-press support ------------------
   // Show the desktop context menu after the user holds for 500 ms.
@@ -154,6 +155,28 @@ export function Desktop({
     setSelectedAppId(null);
   };
 
+  const handleIconContextMenu = (appId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenuPos({ x: e.clientX, y: e.clientY });
+    setContextMenuAppId(appId);
+    setSelectedAppId(appId);
+  };
+
+  const handleOpenApp = (appId: string) => {
+    if (appId === "macintosh-hd") {
+      localStorage.setItem("app_finder_initialPath", "/");
+      const finderApp = apps.find((app) => app.id === "finder");
+      if (finderApp) {
+        toggleApp(finderApp.id);
+      }
+    } else {
+      toggleApp(appId as AppId);
+    }
+    setSelectedAppId(null);
+    setContextMenuPos(null);
+  };
+
   // Compute sorted apps based on selected sort type
   const sortedApps = [...apps]
     .filter((app) => app.id !== "finder" && app.id !== "control-panels")
@@ -168,29 +191,43 @@ export function Desktop({
       }
     });
 
-  const desktopMenuItems: MenuItem[] = [
-    {
-      type: "submenu",
-      label: "Sort By",
-      items: [
+  const getContextMenuItems = (): MenuItem[] => {
+    if (contextMenuAppId) {
+      // Icon-specific context menu
+      return [
         {
-          type: "radioGroup",
-          value: sortType,
-          onChange: (val) => setSortType(val as SortType),
+          type: "item",
+          label: "Open",
+          onSelect: () => handleOpenApp(contextMenuAppId),
+        },
+      ];
+    } else {
+      // Blank desktop context menu
+      return [
+        {
+          type: "submenu",
+          label: "Sort By",
           items: [
-            { label: "Name", value: "name" },
-            { label: "Kind", value: "kind" },
+            {
+              type: "radioGroup",
+              value: sortType,
+              onChange: (val) => setSortType(val as SortType),
+              items: [
+                { label: "Name", value: "name" },
+                { label: "Kind", value: "kind" },
+              ],
+            },
           ],
         },
-      ],
-    },
-    { type: "separator" },
-    {
-      type: "item",
-      label: "Set Wallpaper…",
-      onSelect: () => toggleApp("control-panels"),
-    },
-  ];
+        { type: "separator" },
+        {
+          type: "item",
+          label: "Set Wallpaper…",
+          onSelect: () => toggleApp("control-panels"),
+        },
+      ];
+    }
+  };
 
   return (
     <div
@@ -199,6 +236,7 @@ export function Desktop({
       onContextMenu={(e) => {
         e.preventDefault();
         setContextMenuPos({ x: e.clientX, y: e.clientY });
+        setContextMenuAppId(null);
       }}
       style={finalStyles}
       {...longPressHandlers}
@@ -228,6 +266,7 @@ export function Desktop({
               setSelectedAppId("macintosh-hd");
             }}
             onDoubleClick={handleFinderOpen}
+            onContextMenu={(e: React.MouseEvent<HTMLDivElement>) => handleIconContextMenu("macintosh-hd", e)}
             isSelected={selectedAppId === "macintosh-hd"}
             size="large"
           />
@@ -243,6 +282,7 @@ export function Desktop({
                 toggleApp(app.id);
                 setSelectedAppId(null);
               }}
+              onContextMenu={(e: React.MouseEvent<HTMLDivElement>) => handleIconContextMenu(app.id, e)}
               isSelected={selectedAppId === app.id}
               size="large"
             />
@@ -251,8 +291,11 @@ export function Desktop({
       </div>
       <RightClickMenu
         position={contextMenuPos}
-        onClose={() => setContextMenuPos(null)}
-        items={desktopMenuItems}
+        onClose={() => {
+          setContextMenuPos(null);
+          setContextMenuAppId(null);
+        }}
+        items={getContextMenuItems()}
       />
     </div>
   );

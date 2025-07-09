@@ -711,6 +711,8 @@ export function FinderAppComponent({
   ];
 
   const fileMenuItems = (file: FileItem): MenuItem[] => [
+    { type: "item", label: "Open", onSelect: () => handleFileOpen(file) },
+    { type: "separator" },
     { type: "item", label: "Rename…", onSelect: handleRename },
     { type: "item", label: "Duplicate", onSelect: handleDuplicate },
     {

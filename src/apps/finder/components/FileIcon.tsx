@@ -9,6 +9,7 @@ interface FileIconProps {
   content?: string | Blob;
   contentUrl?: string;
   onDoubleClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onContextMenu?: (event: React.MouseEvent<HTMLDivElement>) => void;
   isSelected?: boolean;
   isDropTarget?: boolean;
   onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
@@ -23,6 +24,7 @@ export function FileIcon({
   content,
   contentUrl,
   onDoubleClick,
+  onContextMenu,
   isSelected,
   isDropTarget,
   onClick,
@@ -206,6 +208,7 @@ export function FileIcon({
       className={`flex flex-col items-center justify-start cursor-pointer gap-1 ${sizes.container} ${className}`}
       onDoubleClick={handleDoubleClick}
       onClick={handleClick}
+      onContextMenu={onContextMenu}
     >
       <div
         className={`flex items-center justify-center ${sizes.icon} ${
