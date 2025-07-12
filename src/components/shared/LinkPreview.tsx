@@ -17,15 +17,19 @@ interface LinkPreviewProps {
 }
 
 export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
-  const [metadata, setMetadata] = useState<LinkMetadata | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const launchApp = useLaunchApp();
-
   // Helper function to check if URL is YouTube
   const isYouTubeUrl = (url: string): boolean => {
     return /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/.test(url);
   };
+
+  const [metadata, setMetadata] = useState<LinkMetadata | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isFullWidthThumbnail, setIsFullWidthThumbnail] = useState(() => {
+    // YouTube links should always start as full width
+    return isYouTubeUrl(url);
+  });
+  const launchApp = useLaunchApp();
 
   // Helper function to extract YouTube video ID
   const extractYouTubeVideoId = (url: string): string | null => {
@@ -160,9 +164,10 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
       style={{ borderRadius: '3px' }}
       onClick={handleClick}
     >
-      <div className="flex">
-        {metadata.image && (
-          <div className="w-20 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0">
+      {isFullWidthThumbnail && metadata.image ? (
+        // Full width thumbnail layout with overlay
+        <>
+          <div className="relative aspect-video bg-gray-100 overflow-hidden">
             <img
               src={metadata.image}
               alt={metadata.title || "Link preview"}
@@ -171,101 +176,182 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
                 // Hide image if it fails to load
                 e.currentTarget.style.display = "none";
               }}
-              onLoad={(e) => {
-                // Adjust container based on image aspect ratio
-                const img = e.currentTarget;
-                const container = img.parentElement;
-                if (container) {
-                  const aspectRatio = img.naturalWidth / img.naturalHeight;
-                  
-                  if (aspectRatio > 1.5) {
-                    // Wide image (16:9 or similar) - use 80x45 (16:9)
-                    container.className = "w-20 h-11 bg-gray-100 relative overflow-hidden flex-shrink-0";
-                  } else {
-                    // Square or tall image - use 48x48 (square)
-                    container.className = "w-12 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0";
-                  }
-                }
-              }}
             />
+            
+            {/* Overlay with favicon and title */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+              <div className="flex items-center gap-2">
+                <img 
+                  src={getFaviconUrl(url)} 
+                  alt="Site favicon" 
+                  className="h-4 w-4 flex-shrink-0"
+                  onError={(e) => {
+                    // Fallback to a simple circle if favicon fails to load
+                    e.currentTarget.style.display = "none";
+                    e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                  }}
+                />
+                <div className="h-4 w-4 bg-gray-300 rounded-full flex-shrink-0 hidden"></div>
+                {metadata.title && (
+                  <h3 className="font-semibold text-white text-sm truncate">
+                    {metadata.title}
+                  </h3>
+                )}
+              </div>
+            </div>
           </div>
-        )}
-        
-        <div className="flex-1 min-w-0 p-3">
-          {metadata.title && (
-            <h3 className="font-semibold text-gray-900 text-sm mb-1" style={{
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden"
-            }}>
-              {metadata.title}
-            </h3>
-          )}
           
-          {metadata.description && (
-            <p className="text-xs text-gray-600 mb-2" style={{
-              display: "-webkit-box",
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden"
-            }}>
-              {metadata.description}
-            </p>
-          )}
+          {/* Action buttons */}
+          <div className="px-3 pb-3">
+            {isYouTubeUrl(url) ? (
+              <div className="flex gap-2 pt-2 border-t border-gray-100">
+                <button
+                  onClick={handleAddToIpod}
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  title="Add to iPod"
+                >
+                  <Music className="h-3 w-3" />
+                  <span>Add to iPod</span>
+                </button>
+                <button
+                  onClick={handleAddToVideos}
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  title="Add to Videos"
+                >
+                  <Video className="h-3 w-3" />
+                  <span>Add to Videos</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2 pt-2 border-t border-gray-100">
+                <button
+                  onClick={handleOpenInIE}
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  title="Open in Internet Explorer"
+                >
+                  <span>Open in IE</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        // Side-by-side layout for normal/square thumbnails
+        <>
+          <div className="flex">
+            {metadata.image && (
+              <div className="w-20 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0">
+                <img
+                  src={metadata.image}
+                  alt={metadata.title || "Link preview"}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Hide image if it fails to load
+                    e.currentTarget.style.display = "none";
+                  }}
+                  onLoad={(e) => {
+                    // Determine if this should be full width
+                    const img = e.currentTarget;
+                    const container = img.parentElement;
+                    const aspectRatio = img.naturalWidth / img.naturalHeight;
+                    const shouldBeFullWidth = isYouTubeUrl(url) || aspectRatio > 1.5;
+                    
+                    if (shouldBeFullWidth) {
+                      setIsFullWidthThumbnail(true);
+                    } else {
+                      // Adjust container for side-by-side layout
+                      if (container) {
+                        if (aspectRatio > 1.5) {
+                          // Wide image (16:9 or similar) - use 80x45 (16:9)
+                          container.className = "w-20 h-11 bg-gray-100 relative overflow-hidden flex-shrink-0";
+                        } else {
+                          // Square or tall image - use 48x48 (square)
+                          container.className = "w-12 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0";
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            )}
+            
+            <div className="flex-1 min-w-0 p-3">
+              {metadata.title && (
+                <h3 className="font-semibold text-gray-900 text-sm mb-1" style={{
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden"
+                }}>
+                  {metadata.title}
+                </h3>
+              )}
+              
+              {metadata.description && (
+                <p className="text-xs text-gray-600 mb-2" style={{
+                  display: "-webkit-box",
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden"
+                }}>
+                  {metadata.description}
+                </p>
+              )}
+              
+              <div className="flex items-center gap-2">
+                <img 
+                  src={getFaviconUrl(url)} 
+                  alt="Site favicon" 
+                  className="h-4 w-4 flex-shrink-0"
+                  onError={(e) => {
+                    // Fallback to a simple circle if favicon fails to load
+                    e.currentTarget.style.display = "none";
+                    e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                  }}
+                />
+                <div className="h-4 w-4 bg-gray-300 rounded-full flex-shrink-0 hidden"></div>
+                <p className="text-xs text-gray-500 truncate">
+                  {metadata.siteName || new URL(url).hostname}
+                </p>
+              </div>
+            </div>
+          </div>
           
-          <div className="flex items-center gap-2">
-            <img 
-              src={getFaviconUrl(url)} 
-              alt="Site favicon" 
-              className="h-4 w-4 flex-shrink-0"
-              onError={(e) => {
-                // Fallback to a simple circle if favicon fails to load
-                e.currentTarget.style.display = "none";
-                e.currentTarget.nextElementSibling?.classList.remove("hidden");
-              }}
-            />
-            <div className="h-4 w-4 bg-gray-300 rounded-full flex-shrink-0 hidden"></div>
-            <p className="text-xs text-gray-500 truncate">
-              {metadata.siteName || new URL(url).hostname}
-            </p>
+          {/* Action buttons */}
+          <div className="px-3 pb-3">
+            {isYouTubeUrl(url) ? (
+              <div className="flex gap-2 pt-2 border-t border-gray-100">
+                <button
+                  onClick={handleAddToIpod}
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  title="Add to iPod"
+                >
+                  <Music className="h-3 w-3" />
+                  <span>Add to iPod</span>
+                </button>
+                <button
+                  onClick={handleAddToVideos}
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  title="Add to Videos"
+                >
+                  <Video className="h-3 w-3" />
+                  <span>Add to Videos</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2 pt-2 border-t border-gray-100">
+                <button
+                  onClick={handleOpenInIE}
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  title="Open in Internet Explorer"
+                >
+                  <span>Open in IE</span>
+                </button>
+              </div>
+            )}
           </div>
-        </div>
-      </div>
-      
-      {/* Action buttons */}
-      <div className="px-3 pb-3">
-        {isYouTubeUrl(url) ? (
-          <div className="flex gap-2 pt-2 border-t border-gray-100">
-            <button
-              onClick={handleAddToIpod}
-              className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-              title="Add to iPod"
-            >
-              <Music className="h-3 w-3" />
-              <span>Add to iPod</span>
-            </button>
-            <button
-              onClick={handleAddToVideos}
-              className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-              title="Add to Videos"
-            >
-              <Video className="h-3 w-3" />
-              <span>Add to Videos</span>
-            </button>
-          </div>
-        ) : (
-          <div className="flex gap-2 pt-2 border-t border-gray-100">
-            <button
-              onClick={handleOpenInIE}
-              className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-              title="Open in Internet Explorer"
-            >
-              <span>Open in IE</span>
-            </button>
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </motion.div>
   );
 }
