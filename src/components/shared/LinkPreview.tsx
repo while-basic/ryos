@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Loader2, AlertCircle, Music, Video, ExternalLink } from "lucide-react";
+import { Loader2, AlertCircle, Music, ExternalLink } from "lucide-react";
 import { useLaunchApp } from "@/hooks/useLaunchApp";
 import { toast } from "sonner";
 
@@ -95,18 +95,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
   // Handle opening YouTube externally
   const handleOpenYouTube = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
-    try {
-      const videoId = extractYouTubeVideoId(url);
-      if (videoId) {
-        launchApp("videos", { initialData: { videoId } });
-      } else {
-        toast.error('Could not extract video ID from this YouTube URL');
-        console.warn('Could not extract video ID from YouTube URL:', url);
-      }
-    } catch (error) {
-      toast.error('Failed to open video in Videos app');
-      console.error('Error launching Videos app:', error);
-    }
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   // Handle opening link externally
@@ -204,11 +193,20 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
 
     if (isYouTubeUrl(url)) {
       // For YouTube links, launch Videos app
-      const videoId = extractYouTubeVideoId(url);
-      if (videoId) {
-        launchApp("videos", { initialData: { videoId } });
-      } else {
-        // Fallback to opening in browser if videoId extraction fails
+      try {
+        const videoId = extractYouTubeVideoId(url);
+        if (videoId) {
+          launchApp("videos", { initialData: { videoId } });
+        } else {
+          toast.error('Could not extract video ID from this YouTube URL');
+          console.warn('Could not extract video ID from YouTube URL:', url);
+          // Fallback to opening in browser if videoId extraction fails
+          window.open(url, "_blank", "noopener,noreferrer");
+        }
+      } catch (error) {
+        toast.error('Failed to open video in Videos app');
+        console.error('Error launching Videos app:', error);
+        // Fallback to opening in browser if app launch fails
         window.open(url, "_blank", "noopener,noreferrer");
       }
     } else {
@@ -292,11 +290,11 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
                   onClick={handleOpenYouTube}
                   onTouchStart={(e) => e.stopPropagation()}
                   className="flex items-center justify-center gap-1.5 px-3 py-2 text-[12px] bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
-                  title="Open in Videos"
+                  title="Open YouTube"
                   data-link-preview
                 >
-                  <Video className="h-3 w-3" />
-                  <span>Open in Videos</span>
+                  <ExternalLink className="h-3 w-3" />
+                  <span>Open YouTube</span>
                 </button>
               </div>
             ) : (
@@ -415,11 +413,11 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
                   onClick={handleOpenYouTube}
                   onTouchStart={(e) => e.stopPropagation()}
                   className="flex items-center justify-center gap-1.5 px-3 py-2 text-[12px] bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
-                  title="Open in Videos"
+                  title="Open YouTube"
                   data-link-preview
                 >
-                  <Video className="h-3 w-3" />
-                  <span>Open in Videos</span>
+                  <ExternalLink className="h-3 w-3" />
+                  <span>Open YouTube</span>
                 </button>
               </div>
             ) : (
