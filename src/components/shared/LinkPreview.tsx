@@ -48,7 +48,8 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
   };
 
   // Handle adding to iPod
-  const handleAddToIpod = (e: React.MouseEvent) => {
+  const handleAddToIpod = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const videoId = extractYouTubeVideoId(url);
     if (videoId) {
@@ -57,7 +58,8 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
   };
 
   // Handle adding to Videos
-  const handleAddToVideos = (e: React.MouseEvent) => {
+  const handleAddToVideos = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const videoId = extractYouTubeVideoId(url);
     if (videoId) {
@@ -66,7 +68,8 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
   };
 
   // Handle opening in Internet Explorer
-  const handleOpenInIE = (e: React.MouseEvent) => {
+  const handleOpenInIE = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const urlObj = new URL(url);
     const domain = urlObj.hostname.replace(/^www\./, '');
@@ -76,6 +79,18 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
     launchApp("internet-explorer", { 
       initialData: { url: cleanUrl, year: "current" }
     });
+  };
+
+  // Handle main link click/tap
+  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  // Prevent event bubbling to parent containers
+  const handleEvent = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
   };
 
   useEffect(() => {
@@ -152,17 +167,18 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
     return null;
   }
 
-  const handleClick = () => {
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className={`bg-white border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer font-geneva-12 ${className}`}
       style={{ borderRadius: '3px' }}
+      data-link-preview="true"
       onClick={handleClick}
+      onMouseEnter={handleEvent}
+      onMouseLeave={handleEvent}
+      onTouchStart={handleEvent}
+      onTouchEnd={handleEvent}
     >
       {isFullWidthThumbnail && metadata.image ? (
         // Full width thumbnail layout with overlay

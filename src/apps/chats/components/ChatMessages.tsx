@@ -302,6 +302,7 @@ function ChatMessagesContent({
   const [isInteractingWithPreview, setIsInteractingWithPreview] =
     useState(false);
 
+
   // Local highlight state for manual speech triggered from this component
   const [localHighlightSegment, setLocalHighlightSegment] = useState<{
     messageId: string;
@@ -522,7 +523,7 @@ function ChatMessagesContent({
               transformOrigin:
                 message.role === "user" ? "bottom right" : "bottom left",
             }}
-            onMouseEnter={() =>
+                        onMouseEnter={() =>
               !isInteractingWithPreview && setHoveredMessageId(messageKey)
             }
             onMouseLeave={() =>
