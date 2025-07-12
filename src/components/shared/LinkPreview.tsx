@@ -122,11 +122,11 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`flex items-center gap-2 p-3 bg-gray-50 border text-sm font-geneva-12 ${className}`}
+        className={`flex items-center gap-2 p-3 bg-white border border-gray-200 text-[10px] font-geneva-12 ${className}`}
         style={{ borderRadius: '3px' }}
       >
-        <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
-        <span className="text-gray-600">Loading preview...</span>
+        <Loader2 className="h-3 w-3 animate-spin text-gray-400" />
+        <span className="text-gray-500">Loading preview...</span>
       </motion.div>
     );
   }
