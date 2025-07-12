@@ -207,7 +207,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
               <div className="flex gap-2 pt-2 border-t border-gray-100">
                 <button
                   onClick={handleAddToIpod}
-                  className="flex items-center justify-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
                   title="Add to iPod"
                 >
                   <Music className="h-3 w-3" />
@@ -215,7 +215,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
                 </button>
                 <button
                   onClick={handleAddToVideos}
-                  className="flex items-center justify-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
                   title="Add to Videos"
                 >
                   <Video className="h-3 w-3" />
@@ -226,7 +226,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
               <div className="flex gap-2 pt-2 border-t border-gray-100">
                 <button
                   onClick={handleOpenInIE}
-                  className="flex items-center justify-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors w-full"
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors w-full"
                   title="Open in Internet Explorer"
                 >
                   <ExternalLink className="h-3 w-3" />
@@ -324,7 +324,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
               <div className="flex gap-2 pt-2 border-t border-gray-100">
                 <button
                   onClick={handleAddToIpod}
-                  className="flex items-center justify-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
                   title="Add to iPod"
                 >
                   <Music className="h-3 w-3" />
@@ -332,7 +332,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
                 </button>
                 <button
                   onClick={handleAddToVideos}
-                  className="flex items-center justify-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
                   title="Add to Videos"
                 >
                   <Video className="h-3 w-3" />
@@ -343,7 +343,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
               <div className="flex gap-2 pt-2 border-t border-gray-100">
                 <button
                   onClick={handleOpenInIE}
-                  className="flex items-center justify-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors w-full"
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors w-full"
                   title="Open in Internet Explorer"
                 >
                   <ExternalLink className="h-3 w-3" />
