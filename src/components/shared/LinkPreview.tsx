@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ExternalLink, Globe, Image as ImageIcon, Loader2, AlertCircle } from "lucide-react";
+import { ExternalLink, Globe, Loader2, AlertCircle } from "lucide-react";
 
 interface LinkMetadata {
   title?: string;
