@@ -162,7 +162,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
     >
       <div className="flex p-3">
         {metadata.image && (
-          <div className="w-16 h-16 bg-gray-100 relative overflow-hidden flex-shrink-0 mr-3">
+          <div className="w-20 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0 mr-3">
             <img
               src={metadata.image}
               alt={metadata.title || "Link preview"}
@@ -170,6 +170,22 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
               onError={(e) => {
                 // Hide image if it fails to load
                 e.currentTarget.style.display = "none";
+              }}
+              onLoad={(e) => {
+                // Adjust container based on image aspect ratio
+                const img = e.currentTarget;
+                const container = img.parentElement;
+                if (container) {
+                  const aspectRatio = img.naturalWidth / img.naturalHeight;
+                  
+                  if (aspectRatio > 1.5) {
+                    // Wide image (16:9 or similar) - use 80x45 (16:9)
+                    container.className = "w-20 h-11 bg-gray-100 relative overflow-hidden flex-shrink-0 mr-3";
+                  } else {
+                    // Square or tall image - use 48x48 (square)
+                    container.className = "w-12 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0 mr-3";
+                  }
+                }
               }}
             />
           </div>
