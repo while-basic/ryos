@@ -158,7 +158,9 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
     return null;
   }
 
-  const handleClick = () => {
+  // Handle opening original link
+  const handleOpenOriginalLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
@@ -166,19 +168,20 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer font-geneva-12 ${className}`}
+      className={`bg-white border border-gray-200 overflow-hidden hover:shadow-md transition-shadow font-geneva-12 ${className}`}
       style={{ borderRadius: '3px' }}
-      onClick={handleClick}
     >
       {isFullWidthThumbnail && metadata.image ? (
         // Full width thumbnail layout with overlay
         <>
-          <div className="relative aspect-video bg-gray-100 overflow-hidden">
+          <div 
+            className="relative aspect-video bg-gray-100 overflow-hidden cursor-pointer"
+            onClick={isYouTubeUrl(url) ? handleAddToVideos : handleOpenInIE}
+          >
             <img
               src={metadata.image}
               alt={metadata.title || "Link preview"}
-              className={`w-full h-full object-cover ${isYouTubeUrl(url) ? 'cursor-pointer' : ''}`}
-              onClick={isYouTubeUrl(url) ? handleAddToVideos : undefined}
+              className="w-full h-full object-cover"
               onError={(e) => {
                 // Hide image if it fails to load
                 e.currentTarget.style.display = "none";
@@ -232,12 +235,12 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
             ) : (
               <div className="flex gap-2 pt-2 border-t border-gray-100">
                 <button
-                  onClick={handleOpenInIE}
+                  onClick={handleOpenOriginalLink}
                   className="flex items-center justify-center gap-1.5 px-3 py-2 text-[12px] bg-gray-100 hover:bg-gray-200 rounded-md transition-colors w-full"
-                  title="Open in Internet Explorer"
+                  title="Open External Link"
                 >
                   <ExternalLink className="h-3 w-3" />
-                  <span>Open in IE</span>
+                  <span>Open External Link</span>
                 </button>
               </div>
             )}
@@ -248,12 +251,14 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
         <>
           <div className="flex">
             {metadata.image && (
-              <div className="w-20 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0">
+              <div 
+                className="w-20 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0 cursor-pointer"
+                onClick={isYouTubeUrl(url) ? handleAddToVideos : handleOpenInIE}
+              >
                 <img
                   src={metadata.image}
                   alt={metadata.title || "Link preview"}
-                  className={`w-full h-full object-cover ${isYouTubeUrl(url) ? 'cursor-pointer' : ''}`}
-                  onClick={isYouTubeUrl(url) ? handleAddToVideos : undefined}
+                  className="w-full h-full object-cover"
                   onError={(e) => {
                     // Hide image if it fails to load
                     e.currentTarget.style.display = "none";
@@ -350,12 +355,12 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
             ) : (
               <div className="flex gap-2 pt-2 border-t border-gray-100">
                 <button
-                  onClick={handleOpenInIE}
+                  onClick={handleOpenOriginalLink}
                   className="flex items-center justify-center gap-1.5 px-3 py-2 text-[12px] bg-gray-100 hover:bg-gray-200 rounded-md transition-colors w-full"
-                  title="Open in Internet Explorer"
+                  title="Open External Link"
                 >
                   <ExternalLink className="h-3 w-3" />
-                  <span>Open in IE</span>
+                  <span>Open External Link</span>
                 </button>
               </div>
             )}
