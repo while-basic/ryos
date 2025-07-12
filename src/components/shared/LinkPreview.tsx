@@ -25,6 +25,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
   const [metadata, setMetadata] = useState<LinkMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [youtubeError, setYoutubeError] = useState<string | null>(null);
   const [isFullWidthThumbnail, setIsFullWidthThumbnail] = useState(() => {
     // YouTube links should always start as full width
     return isYouTubeUrl(url);
@@ -33,8 +34,35 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
 
   // Helper function to extract YouTube video ID
   const extractYouTubeVideoId = (url: string): string | null => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
-    return match ? match[1] : null;
+    try {
+      // Handle youtu.be links
+      if (url.includes('youtu.be/')) {
+        const match = url.match(/youtu\.be\/([^&\n?#]+)/);
+        return match ? match[1] : null;
+      }
+      
+      // Handle youtube.com links
+      if (url.includes('youtube.com/')) {
+        const urlObj = new URL(url);
+        
+        // Handle /watch?v= format
+        if (urlObj.pathname === '/watch') {
+          const videoId = urlObj.searchParams.get('v');
+          return videoId;
+        }
+        
+        // Handle /embed/ format
+        if (urlObj.pathname.startsWith('/embed/')) {
+          const match = urlObj.pathname.match(/\/embed\/([^&\n?#]+)/);
+          return match ? match[1] : null;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error extracting YouTube video ID:', error);
+      return null;
+    }
   };
 
   // Helper function to get favicon URL
@@ -50,18 +78,36 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
   // Handle adding to iPod
   const handleAddToIpod = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const videoId = extractYouTubeVideoId(url);
-    if (videoId) {
-      launchApp("ipod", { initialData: { videoId } });
+    setYoutubeError(null); // Clear any previous errors
+    try {
+      const videoId = extractYouTubeVideoId(url);
+      if (videoId) {
+        launchApp("ipod", { initialData: { videoId } });
+      } else {
+        setYoutubeError('Could not extract video ID from this YouTube URL');
+        console.warn('Could not extract video ID from YouTube URL:', url);
+      }
+    } catch (error) {
+      setYoutubeError('Failed to open video in iPod app');
+      console.error('Error launching iPod app:', error);
     }
   };
 
   // Handle adding to Videos
   const handleAddToVideos = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const videoId = extractYouTubeVideoId(url);
-    if (videoId) {
-      launchApp("videos", { initialData: { videoId } });
+    setYoutubeError(null); // Clear any previous errors
+    try {
+      const videoId = extractYouTubeVideoId(url);
+      if (videoId) {
+        launchApp("videos", { initialData: { videoId } });
+      } else {
+        setYoutubeError('Could not extract video ID from this YouTube URL');
+        console.warn('Could not extract video ID from YouTube URL:', url);
+      }
+    } catch (error) {
+      setYoutubeError('Failed to open video in Videos app');
+      console.error('Error launching Videos app:', error);
     }
   };
 
@@ -203,6 +249,11 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
           
           {/* Action buttons */}
           <div className="px-2 pb-2">
+            {youtubeError && (
+              <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-[10px] text-red-600">{youtubeError}</p>
+              </div>
+            )}
             {isYouTubeUrl(url) ? (
               <div className="flex gap-2 pt-2 border-t border-gray-100">
                 <button
@@ -320,6 +371,11 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
           
           {/* Action buttons */}
           <div className="px-2 pb-2">
+            {youtubeError && (
+              <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-[10px] text-red-600">{youtubeError}</p>
+              </div>
+            )}
             {isYouTubeUrl(url) ? (
               <div className="flex gap-2 pt-2 border-t border-gray-100">
                 <button
