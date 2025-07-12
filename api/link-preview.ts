@@ -14,6 +14,46 @@ interface LinkMetadata {
   url: string;
 }
 
+// Helper function to check if URL is YouTube
+function isYouTubeUrl(url: string): boolean {
+  return /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/.test(url);
+}
+
+// Helper function to extract YouTube video ID
+function extractYouTubeVideoId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+  return match ? match[1] : null;
+}
+
+// Helper function to get YouTube metadata using oEmbed API
+async function getYouTubeMetadata(url: string): Promise<LinkMetadata> {
+  const videoId = extractYouTubeVideoId(url);
+  if (!videoId) {
+    throw new Error("Invalid YouTube URL");
+  }
+
+  // Use YouTube oEmbed API
+  const oembedUrl = `https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${videoId}&format=json`;
+  
+  const response = await fetch(oembedUrl, {
+    signal: AbortSignal.timeout(10000), // 10 second timeout
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch YouTube oEmbed data (${response.status})`);
+  }
+
+  const oembedData = await response.json();
+  
+  return {
+    url: url,
+    title: oembedData.title || `YouTube Video: ${videoId}`,
+    description: `By ${oembedData.author_name || 'Unknown'} on YouTube`,
+    image: oembedData.thumbnail_url || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+    siteName: "YouTube",
+  };
+}
+
 export default async function handler(req: Request) {
   if (req.method !== "GET") {
     return new Response("Method not allowed", { status: 405 });
@@ -47,6 +87,22 @@ export default async function handler(req: Request) {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // Handle YouTube URLs using oEmbed API
+    if (isYouTubeUrl(url)) {
+      try {
+        const metadata = await getYouTubeMetadata(url);
+        return new Response(JSON.stringify(metadata), {
+          headers: { 
+            "Content-Type": "application/json",
+            "Cache-Control": "public, max-age=3600" // Cache for 1 hour
+          },
+        });
+      } catch (error) {
+        console.error("Error fetching YouTube metadata:", error);
+        // Fall back to general scraping if YouTube API fails
+      }
     }
 
     // Fetch the webpage
