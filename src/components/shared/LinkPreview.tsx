@@ -160,9 +160,9 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
       style={{ borderRadius: '3px' }}
       onClick={handleClick}
     >
-      <div className="flex p-3">
+      <div className="flex">
         {metadata.image && (
-          <div className="w-20 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0 mr-3">
+          <div className="w-20 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0">
             <img
               src={metadata.image}
               alt={metadata.title || "Link preview"}
@@ -180,10 +180,10 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
                   
                   if (aspectRatio > 1.5) {
                     // Wide image (16:9 or similar) - use 80x45 (16:9)
-                    container.className = "w-20 h-11 bg-gray-100 relative overflow-hidden flex-shrink-0 mr-3";
+                    container.className = "w-20 h-11 bg-gray-100 relative overflow-hidden flex-shrink-0";
                   } else {
                     // Square or tall image - use 48x48 (square)
-                    container.className = "w-12 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0 mr-3";
+                    container.className = "w-12 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0";
                   }
                 }
               }}
@@ -191,7 +191,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
           </div>
         )}
         
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 p-3">
           {metadata.title && (
             <h3 className="font-semibold text-gray-900 text-sm mb-1" style={{
               display: "-webkit-box",
