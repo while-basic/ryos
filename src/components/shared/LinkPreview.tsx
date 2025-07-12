@@ -61,6 +61,19 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
     }
   };
 
+  // Handle opening in Internet Explorer
+  const handleOpenInIE = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const urlObj = new URL(url);
+    const domain = urlObj.hostname.replace(/^www\./, '');
+    const path = urlObj.pathname + urlObj.search;
+    const cleanUrl = domain + path;
+    
+    launchApp("internet-explorer", { 
+      initialData: { url: cleanUrl, year: "current" }
+    });
+  };
+
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
@@ -108,7 +121,8 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`flex items-center gap-2 p-3 bg-gray-50 rounded-lg border text-sm ${className}`}
+        className={`flex items-center gap-2 p-3 bg-gray-50 border text-sm font-geneva-12 ${className}`}
+        style={{ borderRadius: '3px' }}
       >
         <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
         <span className="text-gray-600">Loading preview...</span>
@@ -121,7 +135,8 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`flex items-center gap-2 p-3 bg-red-50 rounded-lg border border-red-200 text-sm ${className}`}
+        className={`flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-sm font-geneva-12 ${className}`}
+        style={{ borderRadius: '3px' }}
       >
         <AlertCircle className="h-4 w-4 text-red-500" />
         <span className="text-red-600">{error}</span>
@@ -141,69 +156,74 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer ${className}`}
+      className={`bg-white border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer font-geneva-12 ${className}`}
+      style={{ borderRadius: '3px' }}
       onClick={handleClick}
     >
-      {metadata.image && (
-        <div className="aspect-video bg-gray-100 relative overflow-hidden">
-          <img
-            src={metadata.image}
-            alt={metadata.title || "Link preview"}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              // Hide image if it fails to load
-              e.currentTarget.style.display = "none";
-            }}
-          />
-        </div>
-      )}
-      
-      <div className="p-3">
-        <div className="flex items-start gap-2 mb-2">
-          <img 
-            src={getFaviconUrl(url)} 
-            alt="Site favicon" 
-            className="h-4 w-4 mt-0.5 flex-shrink-0"
-            onError={(e) => {
-              // Fallback to a simple circle if favicon fails to load
-              e.currentTarget.style.display = "none";
-              e.currentTarget.nextElementSibling?.classList.remove("hidden");
-            }}
-          />
-          <div className="h-4 w-4 bg-gray-300 rounded-full mt-0.5 flex-shrink-0 hidden"></div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-500 truncate">
-              {metadata.siteName || new URL(url).hostname}
-            </p>
+      <div className="flex p-3">
+        {metadata.image && (
+          <div className="w-16 h-16 bg-gray-100 relative overflow-hidden flex-shrink-0 mr-3">
+            <img
+              src={metadata.image}
+              alt={metadata.title || "Link preview"}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Hide image if it fails to load
+                e.currentTarget.style.display = "none";
+              }}
+            />
           </div>
-          <ExternalLink className="h-3 w-3 text-gray-400 flex-shrink-0" />
+        )}
+        
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start gap-2 mb-2">
+            <img 
+              src={getFaviconUrl(url)} 
+              alt="Site favicon" 
+              className="h-4 w-4 mt-0.5 flex-shrink-0"
+              onError={(e) => {
+                // Fallback to a simple circle if favicon fails to load
+                e.currentTarget.style.display = "none";
+                e.currentTarget.nextElementSibling?.classList.remove("hidden");
+              }}
+            />
+            <div className="h-4 w-4 bg-gray-300 rounded-full mt-0.5 flex-shrink-0 hidden"></div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-gray-500 truncate">
+                {metadata.siteName || new URL(url).hostname}
+              </p>
+            </div>
+            <ExternalLink className="h-3 w-3 text-gray-400 flex-shrink-0" />
+          </div>
+          
+          {metadata.title && (
+            <h3 className="font-semibold text-gray-900 text-sm mb-1" style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden"
+            }}>
+              {metadata.title}
+            </h3>
+          )}
+          
+          {metadata.description && (
+            <p className="text-xs text-gray-600" style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden"
+            }}>
+              {metadata.description}
+            </p>
+          )}
         </div>
-        
-        {metadata.title && (
-          <h3 className="font-semibold text-gray-900 text-sm mb-1" style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden"
-          }}>
-            {metadata.title}
-          </h3>
-        )}
-        
-        {metadata.description && (
-          <p className="text-xs text-gray-600" style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden"
-          }}>
-            {metadata.description}
-          </p>
-        )}
-        
-        {/* YouTube action buttons */}
-        {isYouTubeUrl(url) && (
-          <div className="flex gap-2 mt-3 pt-2 border-t border-gray-100">
+      </div>
+      
+      {/* Action buttons */}
+      <div className="px-3 pb-3">
+        {isYouTubeUrl(url) ? (
+          <div className="flex gap-2 pt-2 border-t border-gray-100">
             <button
               onClick={handleAddToIpod}
               className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
@@ -219,6 +239,17 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
             >
               <Video className="h-3 w-3" />
               <span>Add to Videos</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2 pt-2 border-t border-gray-100">
+            <button
+              onClick={handleOpenInIE}
+              className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              title="Open in Internet Explorer"
+            >
+              <ExternalLink className="h-3 w-3" />
+              <span>Open in IE</span>
             </button>
           </div>
         )}
