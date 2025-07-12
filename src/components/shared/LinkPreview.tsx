@@ -134,8 +134,20 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
   }
 
   const handleClick = () => {
-    window.open(url, "_blank", "noopener,noreferrer");
+    if (isYouTubeUrl(url)) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      // Open regular links in Internet Explorer app
+      launchApp("internet-explorer", {
+        initialData: {
+          url: url,
+          year: "current",
+        },
+      });
+    }
   };
+
+  const isYouTube = isYouTubeUrl(url);
 
   return (
     <motion.div
@@ -144,7 +156,8 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
       className={`bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer ${className}`}
       onClick={handleClick}
     >
-      {metadata.image && (
+      {/* YouTube Layout - Full width image */}
+      {isYouTube && metadata.image && (
         <div className="aspect-video bg-gray-100 relative overflow-hidden">
           <img
             src={metadata.image}
@@ -158,71 +171,134 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
         </div>
       )}
       
-      <div className="p-3">
-        <div className="flex items-start gap-2 mb-2">
-          <img 
-            src={getFaviconUrl(url)} 
-            alt="Site favicon" 
-            className="h-4 w-4 mt-0.5 flex-shrink-0"
-            onError={(e) => {
-              // Fallback to a simple circle if favicon fails to load
-              e.currentTarget.style.display = "none";
-              e.currentTarget.nextElementSibling?.classList.remove("hidden");
-            }}
-          />
-          <div className="h-4 w-4 bg-gray-300 rounded-full mt-0.5 flex-shrink-0 hidden"></div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-500 truncate">
-              {metadata.siteName || new URL(url).hostname}
-            </p>
+      {/* Regular Link Layout - Square thumbnail alongside text */}
+      {!isYouTube && metadata.image && (
+        <div className="flex">
+          <div className="w-16 h-16 bg-gray-100 relative overflow-hidden flex-shrink-0">
+            <img
+              src={metadata.image}
+              alt={metadata.title || "Link preview"}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Hide image if it fails to load
+                e.currentTarget.style.display = "none";
+              }}
+            />
           </div>
-          <ExternalLink className="h-3 w-3 text-gray-400 flex-shrink-0" />
+          <div className="flex-1 p-3">
+            <div className="flex items-start gap-1 mb-2">
+              <img 
+                src={getFaviconUrl(url)} 
+                alt="Site favicon" 
+                className="h-4 w-4 mt-0.5 flex-shrink-0"
+                onError={(e) => {
+                  // Fallback to a simple circle if favicon fails to load
+                  e.currentTarget.style.display = "none";
+                  e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                }}
+              />
+              <div className="h-4 w-4 bg-gray-300 rounded-full mt-0.5 flex-shrink-0 hidden"></div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-500 truncate">
+                  {metadata.siteName || new URL(url).hostname}
+                </p>
+              </div>
+              <ExternalLink className="h-3 w-3 text-gray-400 flex-shrink-0" />
+            </div>
+            
+            {metadata.title && (
+              <h3 className="font-semibold text-gray-900 text-sm mb-1" style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden"
+              }}>
+                {metadata.title}
+              </h3>
+            )}
+            
+            {metadata.description && (
+              <p className="text-xs text-gray-600" style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden"
+              }}>
+                {metadata.description}
+              </p>
+            )}
+          </div>
         </div>
-        
-        {metadata.title && (
-          <h3 className="font-semibold text-gray-900 text-sm mb-1" style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden"
-          }}>
-            {metadata.title}
-          </h3>
-        )}
-        
-        {metadata.description && (
-          <p className="text-xs text-gray-600" style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden"
-          }}>
-            {metadata.description}
-          </p>
-        )}
-        
-        {/* YouTube action buttons */}
-        {isYouTubeUrl(url) && (
-          <div className="flex gap-2 mt-3 pt-2 border-t border-gray-100">
-            <button
-              onClick={handleAddToIpod}
-              className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-              title="Add to iPod"
-            >
-              <Music className="h-3 w-3" />
-              <span>Add to iPod</span>
-            </button>
-            <button
-              onClick={handleAddToVideos}
-              className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-              title="Add to Videos"
-            >
-              <Video className="h-3 w-3" />
-              <span>Add to Videos</span>
-            </button>
+      )}
+      
+      {/* Content area for both layouts when no image or YouTube with content */}
+      {(isYouTube || !metadata.image) && (
+        <div className="p-3">
+          <div className="flex items-start gap-1 mb-2">
+            <img 
+              src={getFaviconUrl(url)} 
+              alt="Site favicon" 
+              className="h-4 w-4 mt-0.5 flex-shrink-0"
+              onError={(e) => {
+                // Fallback to a simple circle if favicon fails to load
+                e.currentTarget.style.display = "none";
+                e.currentTarget.nextElementSibling?.classList.remove("hidden");
+              }}
+            />
+            <div className="h-4 w-4 bg-gray-300 rounded-full mt-0.5 flex-shrink-0 hidden"></div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-gray-500 truncate">
+                {metadata.siteName || new URL(url).hostname}
+              </p>
+            </div>
+            <ExternalLink className="h-3 w-3 text-gray-400 flex-shrink-0" />
           </div>
-        )}
-      </div>
+          
+          {metadata.title && (
+            <h3 className="font-semibold text-gray-900 text-sm mb-1" style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden"
+            }}>
+              {metadata.title}
+            </h3>
+          )}
+          
+          {metadata.description && (
+            <p className="text-xs text-gray-600" style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden"
+            }}>
+              {metadata.description}
+            </p>
+          )}
+          
+          {/* YouTube action buttons */}
+          {isYouTube && (
+            <div className="flex gap-2 mt-3 pt-2 border-t">
+              <button
+                onClick={handleAddToIpod}
+                className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                title="Add to iPod"
+              >
+                <Music className="h-3 w-3" />
+                <span>Add to iPod</span>
+              </button>
+              <button
+                onClick={handleAddToVideos}
+                className="flex items-center gap-1.5 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                title="Add to Videos"
+              >
+                <Video className="h-3 w-3" />
+                <span>Add to Videos</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 }
