@@ -56,6 +56,15 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
     }
   };
 
+  // Handle adding to Videos (for thumbnail clicks)
+  const handleAddToVideos = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const videoId = extractYouTubeVideoId(url);
+    if (videoId) {
+      launchApp("videos", { initialData: { videoId } });
+    }
+  };
+
   // Handle opening in YouTube
   const handleOpenInYouTube = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -168,7 +177,8 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
             <img
               src={metadata.image}
               alt={metadata.title || "Link preview"}
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover ${isYouTubeUrl(url) ? 'cursor-pointer' : ''}`}
+              onClick={isYouTubeUrl(url) ? handleAddToVideos : undefined}
               onError={(e) => {
                 // Hide image if it fails to load
                 e.currentTarget.style.display = "none";
@@ -242,7 +252,8 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
                 <img
                   src={metadata.image}
                   alt={metadata.title || "Link preview"}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover ${isYouTubeUrl(url) ? 'cursor-pointer' : ''}`}
+                  onClick={isYouTubeUrl(url) ? handleAddToVideos : undefined}
                   onError={(e) => {
                     // Hide image if it fails to load
                     e.currentTarget.style.display = "none";
