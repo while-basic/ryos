@@ -542,7 +542,7 @@ export function VideosAppComponent({
     } catch (error) {
       console.error("Failed to add video:", error);
       showStatus(
-        `❌ Error adding: ${
+        `Error adding: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
       );
@@ -556,13 +556,13 @@ export function VideosAppComponent({
     const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
     try {
       await addVideo(youtubeUrl); // addVideo sets current index and plays
-      showStatus(`▶ Added and playing video`);
+              showStatus(`Added and playing video`);
     } catch (error) {
       console.error(
         `[Videos] Error adding video for videoId ${videoId}:`,
         error
       );
-      showStatus(`❌ Failed to add video`);
+              showStatus(`Failed to add video`);
       throw error; // Re-throw to let caller handle
     }
   };
@@ -585,7 +585,7 @@ export function VideosAppComponent({
           console.log(`[Videos] Video ID ${videoId} found in playlist. Playing.`);
           setCurrentIndex(existingVideoIndex);
           setIsPlaying(true);
-          showStatus(`▶ Playing ${currentVideos[existingVideoIndex].title}`);
+          showStatus(`Playing ${currentVideos[existingVideoIndex].title}`);
         } else {
           console.log(
             `[Videos] Video ID ${videoId} not found. Adding and playing.`
@@ -595,7 +595,7 @@ export function VideosAppComponent({
         }
       } catch (error) {
         console.error(`[Videos] Error processing video ID ${videoId}:`, error);
-        showStatus(`❌ Failed to process video: ${videoId}`);
+        showStatus(`Failed to process video: ${videoId}`);
         throw error; // Re-throw to let caller handle
       }
     },
@@ -632,7 +632,7 @@ export function VideosAppComponent({
             error
           );
           // Don't show error toast immediately - let user try again
-          showStatus(`❌ Failed to load video: ${videoIdToProcess}`);
+          showStatus(`Failed to load video: ${videoIdToProcess}`);
         });
       
       // Mark this initialData as processed
@@ -686,7 +686,7 @@ export function VideosAppComponent({
 
   const togglePlay = () => {
     togglePlayStore();
-    showStatus(!isPlaying ? "PLAY ▶" : "PAUSED ❙❙");
+    showStatus(!isPlaying ? "PLAY" : "PAUSED");
     playVideoTape();
   };
 
