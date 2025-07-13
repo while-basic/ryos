@@ -388,7 +388,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
           {/* Action buttons */}
           <div className="px-2 pb-2">
             {isYouTubeUrl(url) ? (
-              <div className="flex gap-2 pt-2 border-t border-gray-100">
+              <div className="flex gap-2 pt-2">
                 <button
                   onClick={handleAddToIpod}
                   onTouchStart={(e) => e.stopPropagation()}
@@ -411,7 +411,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
                 </button>
               </div>
             ) : (
-              <div className="flex gap-2 pt-2 border-t border-gray-100">
+              <div className="flex gap-2 pt-2">
                 <button
                   onClick={handleOpenExternally}
                   onTouchStart={(e) => e.stopPropagation()}
