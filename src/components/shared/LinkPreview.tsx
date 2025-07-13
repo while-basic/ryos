@@ -330,7 +330,6 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
                   onLoad={(e) => {
                     // Determine if this should be full width
                     const img = e.currentTarget;
-                    const container = img.parentElement;
                     const aspectRatio = img.naturalWidth / img.naturalHeight;
                     const shouldBeFullWidth = isYouTubeUrl(url) || aspectRatio > 1.5;
                     
