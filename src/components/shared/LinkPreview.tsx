@@ -226,8 +226,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`link-preview-container bg-white border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer font-geneva-12 ${className}`}
-      style={{ borderRadius: '3px' }}
+      className={`link-preview-container bg-white border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer font-geneva-12 rounded ${className}`}
       onClick={handleClick}
       onTouchStart={(e) => {
         // Prevent the parent message from handling this touch
