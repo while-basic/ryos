@@ -593,7 +593,7 @@ export function VideosAppComponent({
     const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
     try {
       await addVideo(youtubeUrl); // addVideo sets current index and plays
-              showStatus(`Added and playing video`);
+              showStatus("VIDEO ADDED");
     } catch (error) {
       console.error(
         `[Videos] Error adding video for videoId ${videoId}:`,
