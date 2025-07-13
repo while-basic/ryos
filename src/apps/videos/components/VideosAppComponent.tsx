@@ -669,7 +669,13 @@ export function VideosAppComponent({
         `[Videos] Processing initialData.videoId on mount: ${videoIdToProcess}`
       );
       
-      toast.info("Opening shared video...");
+      toast.info(
+        <>
+          Opened shared video. Press{' '}
+          <span className="font-chicago">⏯</span>
+          {' '}to start playing.
+        </>
+      );
       
       // Process immediately without delay and with better error handling
       processVideoId(videoIdToProcess)
@@ -720,7 +726,13 @@ export function VideosAppComponent({
           `[Videos] Received updateApp event with videoId: ${videoId}`
         );
         bringToForeground("videos");
-        toast.info("Opening shared video...");
+        toast.info(
+          <>
+            Opened shared video. Press{' '}
+            <span className="font-chicago">⏯</span>
+            {' '}to start playing.
+          </>
+        );
         processVideoId(videoId).catch((error) => {
           console.error(
             `[Videos] Error processing videoId ${videoId} from updateApp event:`,
