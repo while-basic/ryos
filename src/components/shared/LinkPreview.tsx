@@ -342,7 +342,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
               </div>
             )}
             
-            <div className="flex-1 min-w-0 p-3 flex flex-col justify-center">
+            <div className={`flex-1 min-w-0 p-3 ${metadata.image ? 'flex flex-col justify-center' : ''}`}>
               {metadata.title && (
                 <h3 className="font-semibold text-gray-900 text-[10px] mb-1" style={{
                   display: "-webkit-box",
@@ -355,7 +355,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
               )}
               
               {metadata.description && (
-                <p className="text-[10px] text-gray-600" style={{
+                <p className={`text-[10px] text-gray-600 ${metadata.image ? '' : 'mb-2'}`} style={{
                   display: "-webkit-box",
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: "vertical",
@@ -363,6 +363,25 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
                 }}>
                   {metadata.description}
                 </p>
+              )}
+              
+              {!metadata.image && (
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={getFaviconUrl(url)} 
+                    alt="Site favicon" 
+                    className="h-4 w-4 flex-shrink-0"
+                    onError={(e) => {
+                      // Fallback to a simple circle if favicon fails to load
+                      e.currentTarget.style.display = "none";
+                      e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                    }}
+                  />
+                  <div className="h-4 w-4 bg-gray-300 rounded-full flex-shrink-0 hidden"></div>
+                  <p className="text-[10px] text-gray-500 truncate">
+                    {metadata.siteName || new URL(url).hostname}
+                  </p>
+                </div>
               )}
             </div>
           </div>
