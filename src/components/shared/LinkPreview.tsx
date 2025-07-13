@@ -318,7 +318,7 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
         <>
           <div className="flex">
             {metadata.image && (
-              <div className="w-20 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0">
+              <div className="w-16 h-16 bg-gray-100 relative overflow-hidden flex-shrink-0">
                 <img
                   src={metadata.image}
                   alt={metadata.title || "Link preview"}
@@ -336,24 +336,13 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
                     
                     if (shouldBeFullWidth) {
                       setIsFullWidthThumbnail(true);
-                    } else {
-                      // Adjust container for side-by-side layout
-                      if (container) {
-                        if (aspectRatio > 1.5) {
-                          // Wide image (16:9 or similar) - use 80x45 (16:9)
-                          container.className = "w-20 h-11 bg-gray-100 relative overflow-hidden flex-shrink-0";
-                        } else {
-                          // Square or tall image - use 48x48 (square)
-                          container.className = "w-12 h-12 bg-gray-100 relative overflow-hidden flex-shrink-0";
-                        }
-                      }
                     }
                   }}
                 />
               </div>
             )}
             
-            <div className="flex-1 min-w-0 p-3">
+            <div className="flex-1 min-w-0 p-3 flex flex-col justify-center">
               {metadata.title && (
                 <h3 className="font-semibold text-gray-900 text-[10px] mb-1" style={{
                   display: "-webkit-box",
@@ -366,32 +355,15 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
               )}
               
               {metadata.description && (
-                <p className="text-[10px] text-gray-600 mb-2" style={{
+                <p className="text-[10px] text-gray-600" style={{
                   display: "-webkit-box",
-                  WebkitLineClamp: 3,
+                  WebkitLineClamp: 2,
                   WebkitBoxOrient: "vertical",
                   overflow: "hidden"
                 }}>
                   {metadata.description}
                 </p>
               )}
-              
-              <div className="flex items-center gap-2">
-                <img 
-                  src={getFaviconUrl(url)} 
-                  alt="Site favicon" 
-                  className="h-4 w-4 flex-shrink-0"
-                  onError={(e) => {
-                    // Fallback to a simple circle if favicon fails to load
-                    e.currentTarget.style.display = "none";
-                    e.currentTarget.nextElementSibling?.classList.remove("hidden");
-                  }}
-                />
-                <div className="h-4 w-4 bg-gray-300 rounded-full flex-shrink-0 hidden"></div>
-                <p className="text-[10px] text-gray-500 truncate">
-                  {metadata.siteName || new URL(url).hostname}
-                </p>
-              </div>
             </div>
           </div>
           
