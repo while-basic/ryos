@@ -387,43 +387,45 @@ export function LinkPreview({ url, className = "" }: LinkPreviewProps) {
           
           {/* Action buttons */}
           <div className="px-2 pb-2">
-            {isYouTubeUrl(url) ? (
-              <div className="flex gap-2 pt-2">
-                <button
-                  onClick={handleAddToIpod}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 text-[12px] bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
-                  title="Add to iPod"
-                  data-link-preview
-                >
-                  <Music className="h-3 w-3" />
-                  <span>Add to iPod</span>
-                </button>
-                <button
-                  onClick={handleOpenYouTube}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 text-[12px] bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
-                  title="Open YouTube"
-                  data-link-preview
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  <span>Open YouTube</span>
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-2 pt-2">
-                <button
-                  onClick={handleOpenExternally}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 text-[12px] bg-gray-100 hover:bg-gray-200 rounded-md transition-colors w-full"
-                  title="Open Externally"
-                  data-link-preview
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  <span>Open Externally</span>
-                </button>
-              </div>
-            )}
+            <div className="border-t border-gray-100 pt-2">
+              {isYouTubeUrl(url) ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddToIpod}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="flex items-center justify-center gap-1.5 px-3 py-2 text-[12px] bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
+                    title="Add to iPod"
+                    data-link-preview
+                  >
+                    <Music className="h-3 w-3" />
+                    <span>Add to iPod</span>
+                  </button>
+                  <button
+                    onClick={handleOpenYouTube}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="flex items-center justify-center gap-1.5 px-3 py-2 text-[12px] bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1"
+                    title="Open YouTube"
+                    data-link-preview
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    <span>Open YouTube</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleOpenExternally}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="flex items-center justify-center gap-1.5 px-3 py-2 text-[12px] bg-gray-100 hover:bg-gray-200 rounded-md transition-colors w-full"
+                    title="Open Externally"
+                    data-link-preview
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    <span>Open Externally</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}
