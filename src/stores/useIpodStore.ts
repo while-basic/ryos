@@ -334,7 +334,8 @@ export const useIpodStore = create<IpodState>()(
           
           let next: number;
           let newHistoryPosition = state.historyPosition;
-          
+          let newPlaybackHistory = state.playbackHistory;
+
           if (state.isShuffled) {
             // Check if we can go forward in history first
             const nextFromHistory = getNextTrackFromHistory(
@@ -353,8 +354,21 @@ export const useIpodStore = create<IpodState>()(
                 state.playbackHistory,
                 state.currentIndex
               );
-              // When playing a new track, add it to history and move to end
-              newHistoryPosition = -1; // Will be updated below
+
+              // --- NEW LOGIC: maintain reliable back/forward history ---
+              const historyWithCurrent = (() => {
+                const currentId = state.tracks[state.currentIndex]?.id;
+                if (!currentId) return state.playbackHistory;
+                return updatePlaybackHistory(state.playbackHistory, currentId);
+              })();
+
+              const nextId = state.tracks[next]?.id;
+              const historyWithNext = nextId
+                ? updatePlaybackHistory(historyWithCurrent, nextId)
+                : historyWithCurrent;
+
+              newPlaybackHistory = historyWithNext;
+              newHistoryPosition = historyWithNext.length - 1; // Point at newly selected track
             }
           } else {
             // Sequential playback
@@ -362,17 +376,15 @@ export const useIpodStore = create<IpodState>()(
             newHistoryPosition = -1; // Will be updated below
           }
           
-          // Update playback history with current track
-          const currentTrackId = state.tracks[state.currentIndex]?.id;
-          let newPlaybackHistory = state.playbackHistory;
-          if (currentTrackId) {
-            newPlaybackHistory = updatePlaybackHistory(state.playbackHistory, currentTrackId);
-            // If we're adding a new track to history, move to the end
-            if (newHistoryPosition === -1) {
+          // Update playback history for sequential (non-shuffle) playback
+          if (!state.isShuffled) {
+            const currentTrackId = state.tracks[state.currentIndex]?.id;
+            if (currentTrackId) {
+              newPlaybackHistory = updatePlaybackHistory(state.playbackHistory, currentTrackId);
               newHistoryPosition = newPlaybackHistory.length - 1;
             }
           }
-          
+
           return {
             currentIndex: next,
             isPlaying: true,
@@ -388,7 +400,8 @@ export const useIpodStore = create<IpodState>()(
           
           let prev: number;
           let newHistoryPosition = state.historyPosition;
-          
+          let newPlaybackHistory = state.playbackHistory;
+
           if (state.isShuffled) {
             // Try to get the actual previous track from playback history
             const previousFromHistory = getPreviousTrackFromHistory(
@@ -407,7 +420,21 @@ export const useIpodStore = create<IpodState>()(
                 state.playbackHistory,
                 state.currentIndex
               );
-              newHistoryPosition = -1; // Will be updated below
+
+              // --- NEW LOGIC: maintain reliable back/forward history ---
+              const historyWithCurrent = (() => {
+                const currentId = state.tracks[state.currentIndex]?.id;
+                if (!currentId) return state.playbackHistory;
+                return updatePlaybackHistory(state.playbackHistory, currentId);
+              })();
+
+              const prevId = state.tracks[prev]?.id;
+              const historyWithPrev = prevId
+                ? updatePlaybackHistory(historyWithCurrent, prevId)
+                : historyWithCurrent;
+
+              newPlaybackHistory = historyWithPrev;
+              newHistoryPosition = historyWithPrev.length - 1; // Point at newly selected track
             }
           } else {
             // Sequential playback
@@ -415,13 +442,11 @@ export const useIpodStore = create<IpodState>()(
             newHistoryPosition = -1; // Will be updated below
           }
           
-          // Update playback history with current track
-          const currentTrackId = state.tracks[state.currentIndex]?.id;
-          let newPlaybackHistory = state.playbackHistory;
-          if (currentTrackId) {
-            newPlaybackHistory = updatePlaybackHistory(state.playbackHistory, currentTrackId);
-            // If we're adding a new track to history, move to the end
-            if (newHistoryPosition === -1) {
+          // Update playback history for sequential (non-shuffle) playback
+          if (!state.isShuffled) {
+            const currentTrackId = state.tracks[state.currentIndex]?.id;
+            if (currentTrackId) {
+              newPlaybackHistory = updatePlaybackHistory(state.playbackHistory, currentTrackId);
               newHistoryPosition = newPlaybackHistory.length - 1;
             }
           }
