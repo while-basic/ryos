@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface SeekBarProps {
   duration: number;
@@ -115,7 +114,7 @@ export function SeekBar({
   };
 
   // Handle mouse up - seek to position
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     if (isDragging) {
       onSeek((seekPosition / 100) * duration);
       setIsDragging(false);
@@ -124,7 +123,7 @@ export function SeekBar({
       }
       startAutoDismissTimer();
     }
-  };
+  }, [isDragging, onSeek, seekPosition, duration, onDragChange, startAutoDismissTimer]);
 
   // Touch event handlers
   const handleTouchStart = (e: React.TouchEvent) => {
