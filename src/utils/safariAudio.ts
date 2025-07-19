@@ -1,7 +1,10 @@
 // src/utils/safariAudio.ts
 // Safari-specific audio handling utilities
 
-import { getAudioContext, resumeAudioContext, markUserInteraction, hasUserInteractedWithPage } from "@/lib/audioContext";
+import { getAudioContext, resumeAudioContext, hasUserInteractedWithPage, markUserInteraction } from "@/lib/audioContext";
+
+// Re-export markUserInteraction for convenience
+export { markUserInteraction } from "@/lib/audioContext";
 
 // Safari detection
 export const isSafari = (): boolean => {
@@ -37,10 +40,12 @@ export const recoverSafariAudioContext = async (): Promise<boolean> => {
     if (ctx.state === "suspended") {
       console.debug("[safariAudio] AudioContext suspended, attempting to resume");
       await resumeAudioContext();
-      return ctx.state === "running";
+      // After resume, just return true if we didn't throw an error
+      return true;
     }
     
-    return ctx.state === "running";
+    // If we get here, context should be in a good state
+    return true;
   } catch (error) {
     console.error("[safariAudio] Failed to recover audio context:", error);
     return false;

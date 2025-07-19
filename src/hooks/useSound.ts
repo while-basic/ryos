@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useAppStore } from "@/stores/useAppStore";
-import { getAudioContext, resumeAudioContext, markUserInteraction, hasUserInteractedWithPage, handleSafariVisibilityChange } from "@/lib/audioContext";
+import { getAudioContext, resumeAudioContext, markUserInteraction, hasUserInteractedWithPage } from "@/lib/audioContext";
 
 // Global audio context and cache
 const audioBufferCache = new Map<string, AudioBuffer>();
