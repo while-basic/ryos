@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { Soundboard, SoundSlot, PlaybackState } from "@/types/types";
 
 // Helper to create a default soundboard
@@ -44,6 +44,15 @@ export interface SoundboardStoreState {
 
 const SOUNDBOARD_STORE_VERSION = 1;
 const SOUNDBOARD_STORE_NAME = "ryos:soundboard";
+
+// Check if we're on mobile Safari
+const isMobileSafari = () => {
+  const ua = navigator.userAgent;
+  const iOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+  const webkit = /WebKit/.test(ua);
+  const safari = /Safari/.test(ua);
+  return iOS && webkit && safari;
+};
 
 export const useSoundboardStore = create<SoundboardStoreState>()(
   persist(
@@ -220,6 +229,10 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
     {
       name: SOUNDBOARD_STORE_NAME,
       version: SOUNDBOARD_STORE_VERSION,
+      // Use sessionStorage on mobile Safari to avoid IndexedDB issues
+      storage: isMobileSafari() 
+        ? createJSONStorage(() => sessionStorage)
+        : createJSONStorage(() => localStorage),
       partialize: (state) => ({
         boards: state.boards,
         activeBoardId: state.activeBoardId,
@@ -230,6 +243,21 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
         return (state, error) => {
           if (error) {
             console.error("Error rehydrating soundboard store:", error);
+            // On mobile Safari, if we get an error, reset to default state
+            if (isMobileSafari()) {
+              console.warn("Mobile Safari IndexedDB error detected, using default state");
+              const defaultBoard = createDefaultBoard();
+              if (state) {
+                state.boards = [defaultBoard];
+                state.activeBoardId = defaultBoard.id;
+                state.playbackStates = Array(9).fill({
+                  isRecording: false,
+                  isPlaying: false,
+                });
+                state.selectedDeviceId = null;
+                state.hasInitialized = true;
+              }
+            }
           } else if (state) {
             // Don't auto-initialize - wait for the app to open
             // Just fix any data inconsistencies
