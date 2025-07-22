@@ -131,23 +131,35 @@ export function SoundboardAppComponent({
 
   useEffect(() => {
     if (micPermissionGranted) {
-      navigator.mediaDevices.enumerateDevices().then((devices) => {
-        const audioInputs = devices.filter(
-          (device) => device.kind === "audioinput"
-        );
-        setAudioDevices(audioInputs);
+      // Check if mediaDevices API is available (required for Safari and secure contexts)
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        console.warn("MediaDevices API not available");
+        return;
+      }
 
-        if (selectedDeviceId) {
-          const defaultDevice = audioInputs.find(
-            (d) => d.deviceId === "default" || d.deviceId === selectedDeviceId
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) => {
+          const audioInputs = devices.filter(
+            (device) => device.kind === "audioinput"
           );
-          if (defaultDevice) {
-            storeSetSelectedDeviceId(defaultDevice.deviceId);
+          setAudioDevices(audioInputs);
+
+          if (selectedDeviceId) {
+            const defaultDevice = audioInputs.find(
+              (d) => d.deviceId === "default" || d.deviceId === selectedDeviceId
+            );
+            if (defaultDevice) {
+              storeSetSelectedDeviceId(defaultDevice.deviceId);
+            }
+          } else if (audioInputs.length > 0) {
+            storeSetSelectedDeviceId(audioInputs[0].deviceId);
           }
-        } else if (audioInputs.length > 0) {
-          storeSetSelectedDeviceId(audioInputs[0].deviceId);
-        }
-      });
+        })
+        .catch((error) => {
+          console.error("Error enumerating audio devices:", error);
+          setAudioDevices([]);
+        });
     }
   }, [
     micPermissionGranted,
@@ -180,7 +192,7 @@ export function SoundboardAppComponent({
       if (playbackStates[index]?.isPlaying) {
         stopSound(index);
       } else {
-        playSound(index);
+        void playSound(index);
       }
     } else {
       startRecording(index);
@@ -357,7 +369,7 @@ export function SoundboardAppComponent({
           if (playbackStates[index]?.isPlaying) {
             stopSound(index);
           } else {
-            playSound(index);
+            void playSound(index);
           }
         }
       }
