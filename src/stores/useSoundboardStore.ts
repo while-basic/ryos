@@ -3,13 +3,13 @@ import { persist } from "zustand/middleware";
 import { Soundboard, SoundSlot, PlaybackState } from "@/types/types";
 
 // Helper to create a default soundboard
-const createDefaultBoard = (name?: string): Soundboard => ({
+const createDefaultBoard = (): Soundboard => ({
   id: Date.now().toString() + Math.random().toString(36).slice(2),
-  name: name || "New Soundboard",
-  slots: Array(9).fill(null).map((_, index) => ({
+  name: "New Soundboard",
+  slots: Array(9).fill(null).map(() => ({
     audioData: null,
-    emoji: ["🔊", "🎵", "🎶", "🎼", "🎹", "🎸", "🥁", "🎺", "🎻"][index],
-    title: `Sound ${index + 1}`,
+    emoji: undefined,
+    title: undefined,
   })) as SoundSlot[],
 });
 
@@ -45,22 +45,6 @@ export interface SoundboardStoreState {
 const SOUNDBOARD_STORE_VERSION = 1;
 const SOUNDBOARD_STORE_NAME = "ryos:soundboard";
 
-// Safari detection
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-// Check if localStorage is available and working
-const isLocalStorageAvailable = () => {
-  try {
-    const test = '__localStorage_test__';
-    localStorage.setItem(test, test);
-    localStorage.removeItem(test);
-    return true;
-  } catch (e) {
-    console.warn('localStorage not available:', e);
-    return false;
-  }
-};
-
 export const useSoundboardStore = create<SoundboardStoreState>()(
   persist(
     (set, get) => ({
@@ -89,43 +73,12 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
         }
 
         try {
-          // For Safari, load a lightweight version to avoid memory/storage issues
-          const soundboardUrl = isSafari ? "/data/soundboards-lite.json" : "/data/soundboards.json";
-          const response = await fetch(soundboardUrl);
+          const response = await fetch("/data/soundboards.json");
           if (!response.ok)
             throw new Error(
               "Failed to fetch soundboards.json status: " + response.status
             );
-          
-          // Check response size for Safari
-          const contentLength = response.headers.get('content-length');
-          if (isSafari && contentLength && parseInt(contentLength) > 500000) {
-            console.warn('Large soundboard data detected on Safari, using minimal data');
-            // Create a minimal board for Safari to avoid crashes
-            const minimalBoard = createDefaultBoard("Safari Soundboard");
-            set({
-              boards: [minimalBoard],
-              activeBoardId: minimalBoard.id,
-              hasInitialized: true,
-            });
-            return;
-          }
-          
-          let data;
-          try {
-            data = await response.json();
-          } catch (jsonError) {
-            console.error('Failed to parse soundboard JSON:', jsonError);
-            // If JSON parsing fails (possibly due to size), use default board
-            const defaultBoard = createDefaultBoard();
-            set({
-              boards: [defaultBoard],
-              activeBoardId: defaultBoard.id,
-              hasInitialized: true,
-            });
-            return;
-          }
-          
+          const data = await response.json();
           const importedBoardsRaw =
             data.boards || (Array.isArray(data) ? data : [data]);
 
@@ -135,7 +88,7 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
               Date.now().toString() + Math.random().toString(36).slice(2),
             name: boardData.name || "Imported Soundboard",
             slots: (boardData.slots || Array(9).fill(null)).map(
-              (slotData: Partial<SoundSlot> | null) => ({
+              (slotData: Partial<SoundSlot>) => ({
                 audioData: slotData?.audioData || null,
                 emoji: slotData?.emoji || undefined,
                 title: slotData?.title || undefined,
