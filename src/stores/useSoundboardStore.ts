@@ -220,36 +220,12 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
     {
       name: SOUNDBOARD_STORE_NAME,
       version: SOUNDBOARD_STORE_VERSION,
-      storage: isLocalStorageAvailable() ? undefined : {
-        getItem: () => null,
-        setItem: () => {},
-        removeItem: () => {},
-      },
-      partialize: (state) => {
-        // For Safari, limit the amount of data we store
-        if (isSafari) {
-          // Only store board metadata, not the audio data
-          return {
-            boards: state.boards.map(board => ({
-              ...board,
-              slots: board.slots.map(slot => ({
-                ...slot,
-                audioData: null // Don't persist audio data on Safari
-              }))
-            })),
-            activeBoardId: state.activeBoardId,
-            selectedDeviceId: state.selectedDeviceId,
-            hasInitialized: state.hasInitialized,
-          };
-        }
-        
-        return {
-          boards: state.boards,
-          activeBoardId: state.activeBoardId,
-          selectedDeviceId: state.selectedDeviceId,
-          hasInitialized: state.hasInitialized,
-        };
-      },
+      partialize: (state) => ({
+        boards: state.boards,
+        activeBoardId: state.activeBoardId,
+        selectedDeviceId: state.selectedDeviceId,
+        hasInitialized: state.hasInitialized,
+      }),
       onRehydrateStorage: () => {
         return (state, error) => {
           if (error) {

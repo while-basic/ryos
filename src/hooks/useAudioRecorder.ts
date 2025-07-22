@@ -19,11 +19,6 @@ export const useAudioRecorder = ({
 
   const startRecording = useCallback(async () => {
     try {
-      // Check if mediaDevices API is available
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error("MediaDevices API not available. Please ensure you are using HTTPS and a supported browser.");
-      }
-
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: selectedDeviceId
           ? {
@@ -34,12 +29,6 @@ export const useAudioRecorder = ({
 
       setMicPermissionGranted(true);
       const mimeType = getSupportedMimeType();
-      
-      // Check if MediaRecorder is available
-      if (typeof MediaRecorder === 'undefined') {
-        throw new Error("MediaRecorder API not available in this browser.");
-      }
-      
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
 
       // Reset chunks when starting new recording

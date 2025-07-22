@@ -131,35 +131,23 @@ export function SoundboardAppComponent({
 
   useEffect(() => {
     if (micPermissionGranted) {
-      // Check if mediaDevices API is available (required for Safari and secure contexts)
-      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-        console.warn("MediaDevices API not available");
-        return;
-      }
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+        const audioInputs = devices.filter(
+          (device) => device.kind === "audioinput"
+        );
+        setAudioDevices(audioInputs);
 
-      navigator.mediaDevices
-        .enumerateDevices()
-        .then((devices) => {
-          const audioInputs = devices.filter(
-            (device) => device.kind === "audioinput"
+        if (selectedDeviceId) {
+          const defaultDevice = audioInputs.find(
+            (d) => d.deviceId === "default" || d.deviceId === selectedDeviceId
           );
-          setAudioDevices(audioInputs);
-
-          if (selectedDeviceId) {
-            const defaultDevice = audioInputs.find(
-              (d) => d.deviceId === "default" || d.deviceId === selectedDeviceId
-            );
-            if (defaultDevice) {
-              storeSetSelectedDeviceId(defaultDevice.deviceId);
-            }
-          } else if (audioInputs.length > 0) {
-            storeSetSelectedDeviceId(audioInputs[0].deviceId);
+          if (defaultDevice) {
+            storeSetSelectedDeviceId(defaultDevice.deviceId);
           }
-        })
-        .catch((error) => {
-          console.error("Error enumerating audio devices:", error);
-          setAudioDevices([]);
-        });
+        } else if (audioInputs.length > 0) {
+          storeSetSelectedDeviceId(audioInputs[0].deviceId);
+        }
+      });
     }
   }, [
     micPermissionGranted,
@@ -192,7 +180,7 @@ export function SoundboardAppComponent({
       if (playbackStates[index]?.isPlaying) {
         stopSound(index);
       } else {
-        void playSound(index);
+        playSound(index);
       }
     } else {
       startRecording(index);
@@ -363,13 +351,13 @@ export function SoundboardAppComponent({
         (e.keyCode >= 97 && e.keyCode <= 105) ||
         (e.keyCode >= 49 && e.keyCode <= 57)
       ) {
-        if (!activeBoard || index < 0 || index >= activeBoard.slots.length) return;
+        if (index < 0 || index >= activeBoard.slots.length) return;
         const slot = activeBoard.slots[index];
         if (slot?.audioData) {
           if (playbackStates[index]?.isPlaying) {
             stopSound(index);
           } else {
-            void playSound(index);
+            playSound(index);
           }
         }
       }
@@ -447,28 +435,27 @@ export function SoundboardAppComponent({
             micPermissionGranted={micPermissionGranted}
           />
 
-          {activeBoard ? (
-            <SoundGrid
-              board={activeBoard}
-              playbackStates={playbackStates}
-              isEditingTitle={isEditingTitle}
-              onTitleChange={(name) => updateBoardName(name)}
-              onTitleBlur={(name) => {
-                updateBoardName(name);
+          <SoundGrid
+            board={activeBoard}
+            playbackStates={playbackStates}
+            isEditingTitle={isEditingTitle}
+            onTitleChange={(name) => updateBoardName(name)}
+            onTitleBlur={(name) => {
+              updateBoardName(name);
+              setIsEditingTitle(false);
+            }}
+            onTitleKeyDown={(e) => {
+              if (e.key === "Enter") {
+                updateBoardName(e.currentTarget.value);
                 setIsEditingTitle(false);
-              }}
-              onTitleKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  updateBoardName(e.currentTarget.value);
-                  setIsEditingTitle(false);
-                }
-              }}
-              onSlotClick={handleSlotClick}
-              onSlotDelete={deleteSlot}
-              onSlotEmojiClick={(index) =>
-                setDialogState({
-                  type: "emoji",
-                  isOpen: true,
+              }
+            }}
+            onSlotClick={handleSlotClick}
+            onSlotDelete={deleteSlot}
+            onSlotEmojiClick={(index) =>
+              setDialogState({
+                type: "emoji",
+                isOpen: true,
                 slotIndex: index,
                 value: activeBoard.slots[index]?.emoji || "",
               })
@@ -485,11 +472,6 @@ export function SoundboardAppComponent({
             showWaveforms={showWaveforms}
             showEmojis={showEmojis}
           />
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground">
-              Loading soundboard...
-            </div>
-          )}
         </div>
 
         <EmojiDialog
