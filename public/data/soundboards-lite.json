@@ -1,0 +1,19 @@
+{
+  "boards": [
+    {
+      "id": "safari-default",
+      "name": "Safari Soundboard",
+      "slots": [
+        {"audioData": null, "emoji": "🔊", "title": "Sound 1"},
+        {"audioData": null, "emoji": "🎵", "title": "Sound 2"},
+        {"audioData": null, "emoji": "🎶", "title": "Sound 3"},
+        {"audioData": null, "emoji": "🎼", "title": "Sound 4"},
+        {"audioData": null, "emoji": "🎹", "title": "Sound 5"},
+        {"audioData": null, "emoji": "🎸", "title": "Sound 6"},
+        {"audioData": null, "emoji": "🥁", "title": "Sound 7"},
+        {"audioData": null, "emoji": "🎺", "title": "Sound 8"},
+        {"audioData": null, "emoji": "🎻", "title": "Sound 9"}
+      ]
+    }
+  ]
+}

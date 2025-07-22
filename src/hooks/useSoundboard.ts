@@ -7,6 +7,13 @@ import { getAudioContext, resumeAudioContext } from "@/lib/audioContext";
 // Helper function to decode base64 audio data
 const decodeBase64Audio = async (base64Data: string): Promise<AudioBuffer | null> => {
   try {
+    // Check for Safari and large data
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if (isSafari && base64Data.length > 100000) {
+      console.warn('Large audio data detected on Safari, skipping to prevent crash');
+      return null;
+    }
+    
     const binary = atob(base64Data);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {

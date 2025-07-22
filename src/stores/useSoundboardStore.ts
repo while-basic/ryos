@@ -45,6 +45,22 @@ export interface SoundboardStoreState {
 const SOUNDBOARD_STORE_VERSION = 1;
 const SOUNDBOARD_STORE_NAME = "ryos:soundboard";
 
+// Safari detection
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+// Check if localStorage is available and working
+const isLocalStorageAvailable = () => {
+  try {
+    const test = '__localStorage_test__';
+    localStorage.setItem(test, test);
+    localStorage.removeItem(test);
+    return true;
+  } catch (e) {
+    console.warn('localStorage not available:', e);
+    return false;
+  }
+};
+
 export const useSoundboardStore = create<SoundboardStoreState>()(
   persist(
     (set, get) => ({
@@ -73,12 +89,43 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
         }
 
         try {
-          const response = await fetch("/data/soundboards.json");
+          // For Safari, load a lightweight version to avoid memory/storage issues
+          const soundboardUrl = isSafari ? "/data/soundboards-lite.json" : "/data/soundboards.json";
+          const response = await fetch(soundboardUrl);
           if (!response.ok)
             throw new Error(
               "Failed to fetch soundboards.json status: " + response.status
             );
-          const data = await response.json();
+          
+          // Check response size for Safari
+          const contentLength = response.headers.get('content-length');
+          if (isSafari && contentLength && parseInt(contentLength) > 500000) {
+            console.warn('Large soundboard data detected on Safari, using minimal data');
+            // Create a minimal board for Safari to avoid crashes
+            const minimalBoard = createDefaultBoard();
+            set({
+              boards: [minimalBoard],
+              activeBoardId: minimalBoard.id,
+              hasInitialized: true,
+            });
+            return;
+          }
+          
+          let data;
+          try {
+            data = await response.json();
+          } catch (jsonError) {
+            console.error('Failed to parse soundboard JSON:', jsonError);
+            // If JSON parsing fails (possibly due to size), use default board
+            const defaultBoard = createDefaultBoard();
+            set({
+              boards: [defaultBoard],
+              activeBoardId: defaultBoard.id,
+              hasInitialized: true,
+            });
+            return;
+          }
+          
           const importedBoardsRaw =
             data.boards || (Array.isArray(data) ? data : [data]);
 
@@ -220,12 +267,36 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
     {
       name: SOUNDBOARD_STORE_NAME,
       version: SOUNDBOARD_STORE_VERSION,
-      partialize: (state) => ({
-        boards: state.boards,
-        activeBoardId: state.activeBoardId,
-        selectedDeviceId: state.selectedDeviceId,
-        hasInitialized: state.hasInitialized,
-      }),
+      storage: isLocalStorageAvailable() ? undefined : {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+      },
+      partialize: (state) => {
+        // For Safari, limit the amount of data we store
+        if (isSafari) {
+          // Only store board metadata, not the audio data
+          return {
+            boards: state.boards.map(board => ({
+              ...board,
+              slots: board.slots.map(slot => ({
+                ...slot,
+                audioData: null // Don't persist audio data on Safari
+              }))
+            })),
+            activeBoardId: state.activeBoardId,
+            selectedDeviceId: state.selectedDeviceId,
+            hasInitialized: state.hasInitialized,
+          };
+        }
+        
+        return {
+          boards: state.boards,
+          activeBoardId: state.activeBoardId,
+          selectedDeviceId: state.selectedDeviceId,
+          hasInitialized: state.hasInitialized,
+        };
+      },
       onRehydrateStorage: () => {
         return (state, error) => {
           if (error) {
