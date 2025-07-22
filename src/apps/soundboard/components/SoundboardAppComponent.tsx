@@ -363,7 +363,7 @@ export function SoundboardAppComponent({
         (e.keyCode >= 97 && e.keyCode <= 105) ||
         (e.keyCode >= 49 && e.keyCode <= 57)
       ) {
-        if (index < 0 || index >= activeBoard.slots.length) return;
+        if (!activeBoard || index < 0 || index >= activeBoard.slots.length) return;
         const slot = activeBoard.slots[index];
         if (slot?.audioData) {
           if (playbackStates[index]?.isPlaying) {
@@ -447,27 +447,28 @@ export function SoundboardAppComponent({
             micPermissionGranted={micPermissionGranted}
           />
 
-          <SoundGrid
-            board={activeBoard}
-            playbackStates={playbackStates}
-            isEditingTitle={isEditingTitle}
-            onTitleChange={(name) => updateBoardName(name)}
-            onTitleBlur={(name) => {
-              updateBoardName(name);
-              setIsEditingTitle(false);
-            }}
-            onTitleKeyDown={(e) => {
-              if (e.key === "Enter") {
-                updateBoardName(e.currentTarget.value);
+          {activeBoard ? (
+            <SoundGrid
+              board={activeBoard}
+              playbackStates={playbackStates}
+              isEditingTitle={isEditingTitle}
+              onTitleChange={(name) => updateBoardName(name)}
+              onTitleBlur={(name) => {
+                updateBoardName(name);
                 setIsEditingTitle(false);
-              }
-            }}
-            onSlotClick={handleSlotClick}
-            onSlotDelete={deleteSlot}
-            onSlotEmojiClick={(index) =>
-              setDialogState({
-                type: "emoji",
-                isOpen: true,
+              }}
+              onTitleKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  updateBoardName(e.currentTarget.value);
+                  setIsEditingTitle(false);
+                }
+              }}
+              onSlotClick={handleSlotClick}
+              onSlotDelete={deleteSlot}
+              onSlotEmojiClick={(index) =>
+                setDialogState({
+                  type: "emoji",
+                  isOpen: true,
                 slotIndex: index,
                 value: activeBoard.slots[index]?.emoji || "",
               })
@@ -484,6 +485,11 @@ export function SoundboardAppComponent({
             showWaveforms={showWaveforms}
             showEmojis={showEmojis}
           />
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+              Loading soundboard...
+            </div>
+          )}
         </div>
 
         <EmojiDialog

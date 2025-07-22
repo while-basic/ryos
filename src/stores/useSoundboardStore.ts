@@ -3,14 +3,14 @@ import { persist } from "zustand/middleware";
 import { Soundboard, SoundSlot, PlaybackState } from "@/types/types";
 
 // Helper to create a default soundboard
-const createDefaultBoard = (): Soundboard => ({
+const createDefaultBoard = (name?: string): Soundboard => ({
   id: Date.now().toString() + Math.random().toString(36).slice(2),
-  name: "New Soundboard",
-  slots: Array(9).fill({
+  name: name || "New Soundboard",
+  slots: Array(9).fill(null).map((_, index) => ({
     audioData: null,
-    emoji: undefined,
-    title: undefined,
-  }) as SoundSlot[],
+    emoji: ["🔊", "🎵", "🎶", "🎼", "🎹", "🎸", "🥁", "🎺", "🎻"][index],
+    title: `Sound ${index + 1}`,
+  })) as SoundSlot[],
 });
 
 export interface SoundboardStoreState {
@@ -102,7 +102,7 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
           if (isSafari && contentLength && parseInt(contentLength) > 500000) {
             console.warn('Large soundboard data detected on Safari, using minimal data');
             // Create a minimal board for Safari to avoid crashes
-            const minimalBoard = createDefaultBoard();
+            const minimalBoard = createDefaultBoard("Safari Soundboard");
             set({
               boards: [minimalBoard],
               activeBoardId: minimalBoard.id,
@@ -135,7 +135,7 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
               Date.now().toString() + Math.random().toString(36).slice(2),
             name: boardData.name || "Imported Soundboard",
             slots: (boardData.slots || Array(9).fill(null)).map(
-              (slotData: Partial<SoundSlot>) => ({
+              (slotData: Partial<SoundSlot> | null) => ({
                 audioData: slotData?.audioData || null,
                 emoji: slotData?.emoji || undefined,
                 title: slotData?.title || undefined,
