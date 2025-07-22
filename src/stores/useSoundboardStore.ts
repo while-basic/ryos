@@ -20,8 +20,6 @@ export interface SoundboardStoreState {
   playbackStates: PlaybackState[];
   selectedDeviceId: string | null;
   hasInitialized: boolean;
-  storageError: string | null;
-  storageWarningLevel: 'safe' | 'warning' | 'critical';
 
   // Actions
   initializeBoards: () => Promise<void>;
@@ -43,8 +41,6 @@ export interface SoundboardStoreState {
   ) => void;
   resetSoundboardStore: () => void;
   _setBoards_internal: (boards: Soundboard[]) => void;
-  clearStorageError: () => void;
-  cleanupOldData: () => void;
 }
 
 const SOUNDBOARD_STORE_VERSION = 1;
@@ -61,8 +57,6 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
       }) as PlaybackState[],
       selectedDeviceId: null,
       hasInitialized: false,
-      storageError: null,
-      storageWarningLevel: 'safe',
 
       initializeBoards: async () => {
         if (get().hasInitialized) {
@@ -79,20 +73,7 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
           return;
         }
 
-        try {
-          // Check storage availability before attempting to load
-          const storageInfo = getStorageWarningLevel();
-          if (storageInfo === 'critical') {
-            console.warn('[Soundboard] Storage is critical, creating minimal default board');
-            const defaultBoard = createDefaultBoard();
-            set({
-              boards: [defaultBoard],
-              activeBoardId: defaultBoard.id,
-              hasInitialized: true,
-              storageWarningLevel: 'critical',
-            });
-            return;
-          }
+
 
           const response = await fetch("/data/soundboards.json");
           if (!response.ok)
@@ -141,7 +122,6 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
             boards: [defaultBoard],
             activeBoardId: defaultBoard.id,
             hasInitialized: true,
-            storageError: error instanceof Error ? error.message : 'Failed to load soundboards',
           });
         }
       },
@@ -238,38 +218,6 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
       },
 
       _setBoards_internal: (boards) => set({ boards }),
-      
-      clearStorageError: () => set({ storageError: null }),
-      
-      cleanupOldData: () => {
-        const state = get();
-        if (state.boards.length <= 1) {
-          return; // Don't delete the last board
-        }
-        
-        // Find the board with the most audio data
-        let largestBoard = state.boards[0];
-        let maxSize = 0;
-        
-        for (const board of state.boards) {
-          let boardSize = 0;
-          for (const slot of board.slots) {
-            if (slot.audioData) {
-              boardSize += slot.audioData.length * 0.75; // Approximate size
-            }
-          }
-          if (boardSize > maxSize) {
-            maxSize = boardSize;
-            largestBoard = board;
-          }
-        }
-        
-        // Delete the largest board if it's not the active one
-        if (largestBoard.id !== state.activeBoardId) {
-          get().deleteBoard(largestBoard.id);
-          set({ storageError: null }); // Clear any storage errors
-        }
-      },
     }),
     {
       name: SOUNDBOARD_STORE_NAME,
@@ -285,13 +233,7 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
         return (state, error) => {
           if (error) {
             console.error("Error rehydrating soundboard store:", error);
-            if (state) {
-              state.storageError = error.message || 'Storage rehydration failed';
-            }
           } else if (state) {
-            // Update storage warning level
-            state.storageWarningLevel = getStorageWarningLevel();
-            
             // Don't auto-initialize - wait for the app to open
             // Just fix any data inconsistencies
             if (state.boards && state.boards.length > 0) {

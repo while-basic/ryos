@@ -14,7 +14,6 @@ import { SoundboardMenuBar } from "./SoundboardMenuBar";
 import { appMetadata } from "..";
 import { useSoundboardStore } from "@/stores/useSoundboardStore";
 import { useThemeStore } from "@/stores/useThemeStore";
-import { shouldCompressAudio, compressAudioIfNeeded } from "@/utils/audioCompression";
 
 interface ImportedSlot {
   audioData: string | null;
@@ -86,10 +85,7 @@ export function SoundboardAppComponent({
   const storeSetSelectedDeviceId = useSoundboardStore(
     (state) => state.setSelectedDeviceId
   );
-  const storageError = useSoundboardStore((state) => state.storageError);
-  const storageWarningLevel = useSoundboardStore((state) => state.storageWarningLevel);
-  const clearStorageError = useSoundboardStore((state) => state.clearStorageError);
-  const cleanupOldData = useSoundboardStore((state) => state.cleanupOldData);
+
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [dialogState, setDialogState] = useState<DialogState>({
@@ -107,30 +103,12 @@ export function SoundboardAppComponent({
   const [showEmojis, setShowEmojis] = useState(true);
   const activeSlotRef = useRef<number | null>(null);
 
-  // Storage warning effect
-  useEffect(() => {
-    if (storageWarningLevel === 'critical') {
-      console.warn('[Soundboard] Storage usage is critical. Consider cleaning up data.');
-    }
-  }, [storageWarningLevel]);
 
-  const handleRecordingComplete = async (base64Data: string) => {
+
+  const handleRecordingComplete = (base64Data: string) => {
     const activeSlot = activeSlotRef.current;
     if (activeSlot !== null && activeBoardId) {
-      try {
-        // Check if compression is needed
-        if (shouldCompressAudio(base64Data, 512)) { // 512KB threshold
-          console.log('[Soundboard] Audio is large, attempting compression...');
-          const compressedData = await compressAudioIfNeeded(base64Data, 512);
-          updateSlot(activeSlot, { audioData: compressedData });
-        } else {
-          updateSlot(activeSlot, { audioData: base64Data });
-        }
-      } catch (error) {
-        console.error('[Soundboard] Error processing audio data:', error);
-        // Fallback to original data
-        updateSlot(activeSlot, { audioData: base64Data });
-      }
+      updateSlot(activeSlot, { audioData: base64Data });
     }
   };
 
@@ -230,10 +208,7 @@ export function SoundboardAppComponent({
         const importedData = JSON.parse(e.target?.result as string);
         const importedBoardsRaw = importedData.boards || [importedData];
         
-        // Check storage space before importing
-        if (storageWarningLevel === 'critical') {
-          console.warn('[Soundboard] Storage is critical, import may fail');
-        }
+
         
         const newBoardsFromFile: Soundboard[] = importedBoardsRaw.map(
           (board: ImportedBoard) => ({
@@ -256,8 +231,7 @@ export function SoundboardAppComponent({
         }
       } catch (err) {
         console.error("Failed to import soundboards:", err);
-        // Show error to user
-        alert("Failed to import soundboards. The file may be corrupted or too large.");
+
       }
     };
     reader.readAsText(file);
@@ -372,7 +346,6 @@ export function SoundboardAppComponent({
       onToggleWaveforms={setShowWaveforms}
       showEmojis={showEmojis}
       onToggleEmojis={setShowEmojis}
-      onCleanupStorage={cleanupOldData}
     />
   );
 
@@ -427,34 +400,6 @@ export function SoundboardAppComponent({
   return (
     <>
       {!isXpTheme && menuBar}
-      
-      {/* Storage Warning Banner */}
-      {(storageError || storageWarningLevel !== 'safe') && (
-        <div className={`fixed top-0 left-0 right-0 z-50 p-2 text-center text-sm font-medium ${
-          storageError 
-            ? 'bg-red-500 text-white' 
-            : storageWarningLevel === 'critical'
-            ? 'bg-orange-500 text-white'
-            : 'bg-yellow-500 text-black'
-        }`}>
-          {storageError ? (
-            <div className="flex items-center justify-center gap-2">
-              <span>⚠️ Storage Error: {storageError}</span>
-              <button 
-                onClick={clearStorageError}
-                className="px-2 py-1 bg-white bg-opacity-20 rounded hover:bg-opacity-30"
-              >
-                Dismiss
-              </button>
-            </div>
-          ) : storageWarningLevel === 'critical' ? (
-            <span>⚠️ Storage space is critical. Consider deleting some soundboards.</span>
-          ) : (
-            <span>⚠️ Storage space is running low.</span>
-          )}
-        </div>
-      )}
-      
       <WindowFrame
         title={
           isEditingTitle

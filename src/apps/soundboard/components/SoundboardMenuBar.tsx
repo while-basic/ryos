@@ -13,7 +13,6 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { generateAppShareUrl } from "@/utils/sharedUrl";
 import { useThemeStore } from "@/stores/useThemeStore";
-import { calculateStorageSpace } from "@/utils/safeStorage";
 
 interface SoundboardMenuBarProps extends Omit<AppProps, "onClose"> {
   onClose: () => void;
@@ -31,7 +30,6 @@ interface SoundboardMenuBarProps extends Omit<AppProps, "onClose"> {
   onToggleWaveforms?: (show: boolean) => void;
   showEmojis?: boolean;
   onToggleEmojis?: (show: boolean) => void;
-  onCleanupStorage?: () => void;
 }
 
 export function SoundboardMenuBar({
@@ -49,7 +47,6 @@ export function SoundboardMenuBar({
   onToggleWaveforms,
   showEmojis,
   onToggleEmojis,
-  onCleanupStorage,
   onClose,
 }: SoundboardMenuBarProps) {
   const [isOptionPressed, setIsOptionPressed] = useState(false);
@@ -164,29 +161,7 @@ export function SoundboardMenuBar({
             Delete Soundboard
           </DropdownMenuItem>
           <DropdownMenuSeparator className="h-[2px] bg-black my-1" />
-          <DropdownMenuItem
-            onClick={() => {
-              const storageInfo = calculateStorageSpace();
-              toast.info(
-                `Storage Usage: ${storageInfo.percentUsed}% (${Math.round(storageInfo.used / 1024)}KB / ${Math.round(storageInfo.total / 1024)}KB)`,
-                { duration: 4000 }
-              );
-            }}
-            className="text-md h-6 px-3 active:bg-gray-900 active:text-white"
-          >
-            Storage Info
-          </DropdownMenuItem>
-          {onCleanupStorage && (
-            <DropdownMenuItem
-              onClick={() => {
-                onCleanupStorage();
-                toast.success("Cleaned up largest soundboard to free storage space");
-              }}
-              className="text-md h-6 px-3 active:bg-gray-900 active:text-white"
-            >
-              Cleanup Storage
-            </DropdownMenuItem>
-          )}
+
         </DropdownMenuContent>
       </DropdownMenu>
 
