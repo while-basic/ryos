@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { safeStorage } from "@/utils/safeStorage";
 import { Soundboard, SoundSlot, PlaybackState } from "@/types/types";
 
 // Helper to create a default soundboard
@@ -220,6 +221,9 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
     {
       name: SOUNDBOARD_STORE_NAME,
       version: SOUNDBOARD_STORE_VERSION,
+      // Use a guarded storage wrapper so that Safari private mode or other
+      // environments where localStorage is unavailable do not crash the app.
+      storage: createJSONStorage(() => safeStorage()),
       partialize: (state) => ({
         boards: state.boards,
         activeBoardId: state.activeBoardId,
