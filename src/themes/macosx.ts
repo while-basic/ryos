@@ -29,12 +29,12 @@ export const macosx: OsTheme = {
       activeFace: "#E0E0E0",
     },
     trafficLights: {
-      close: "#FF6057",
-      closeHover: "#E14640",
-      minimize: "#FFBD2E",
-      minimizeHover: "#DFA123",
-      maximize: "#27C93F",
-      maximizeHover: "#1DAD2B",
+      close: "#FF6B6B",
+      closeHover: "#FF5252",
+      minimize: "#FFD93D",
+      minimizeHover: "#FFC107",
+      maximize: "#4ECDC4",
+      maximizeHover: "#26A69A",
     },
     selection: {
       bg: "#3067da",
