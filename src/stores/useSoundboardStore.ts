@@ -220,8 +220,21 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
     {
       name: SOUNDBOARD_STORE_NAME,
       version: SOUNDBOARD_STORE_VERSION,
+      // Persist only lightweight data.  Large base-64 audio blobs can easily
+      // blow past the ~5 MB localStorage quota on Mobile Safari and crash the
+      // app during rehydration.  We therefore strip `audioData` from every
+      // slot before the state is serialized.
       partialize: (state) => ({
-        boards: state.boards,
+        boards: state.boards.map((board) => ({
+          ...board,
+          slots: board.slots.map((slot) => ({
+            ...slot,
+            // We do NOT persist the raw audio bytes – they will be
+            // re-loaded from the bundled JSON (or freshly recorded) on the
+            // next session.
+            audioData: null,
+          })),
+        })),
         activeBoardId: state.activeBoardId,
         selectedDeviceId: state.selectedDeviceId,
         hasInitialized: state.hasInitialized,
