@@ -33,8 +33,8 @@ export const macosx: OsTheme = {
       closeHover: "#FF5252",
       minimize: "#FFD93D",
       minimizeHover: "#FFC107",
-      maximize: "#4ECDC4",
-      maximizeHover: "#26A69A",
+      maximize: "#27C93F",
+      maximizeHover: "#1DAD2B",
     },
     selection: {
       bg: "#3067da",
