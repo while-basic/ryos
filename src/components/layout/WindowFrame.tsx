@@ -796,16 +796,24 @@ export function WindowFrame({
             // Mac OS X theme title bar with traffic light buttons
             <div
               className={cn(
-                "flex items-center shrink-0 h-os-titlebar min-h-[1.5rem] mx-0 my-[0.1rem] mb-0 px-[0.1rem] py-[0.2rem] select-none cursor-move border-b-[1.5px] user-select-none z-50 draggable-area",
+                "flex items-center shrink-0 h-os-titlebar min-h-[1.5rem] mx-0 mb-0 px-[0.1rem] py-[0.2rem] select-none cursor-move user-select-none z-50 draggable-area",
                 transparentBackground && "mt-0",
                 isForeground
                   ? transparentBackground
-                    ? "bg-white/70 backdrop-blur-sm border-b-os-window"
-                    : "bg-os-titlebar-active-bg border-b-os-window"
+                    ? "bg-white/70 backdrop-blur-sm"
+                    : "bg-os-titlebar-active-bg"
                   : transparentBackground
-                  ? "bg-white/20 backdrop-blur-sm border-b-os-window"
-                  : "bg-os-titlebar-inactive-bg border-b-gray-400"
+                  ? "bg-white/20 backdrop-blur-sm"
+                  : "bg-os-titlebar-inactive-bg"
               )}
+              style={{
+                borderRadius: "8px 8px 0px 0px",
+                borderBottom: `1px solid ${
+                  theme.colors.titleBar.borderBottom ||
+                  theme.colors.titleBar.border ||
+                  "#b4b4b4"
+                }`,
+              }}
               onMouseDown={handleMouseDownWithForeground}
               onTouchStart={(e: React.TouchEvent<HTMLElement>) => {
                 handleMouseDownWithForeground(e);
