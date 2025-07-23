@@ -31,6 +31,7 @@ export function ConfirmDialog({
   const { play: playAlertSound } = useSound(Sounds.ALERT_SOSUMI);
   const currentTheme = useThemeStore((state) => state.current);
   const isXpTheme = currentTheme === "xp" || currentTheme === "win98";
+  const isMacOsxTheme = currentTheme === "macosx";
 
   // Play sound when dialog opens
   useEffect(() => {
@@ -86,7 +87,7 @@ export function ConfirmDialog({
           Cancel
         </Button>
         <Button 
-          variant="retro" 
+          variant={isMacOsxTheme ? "default" : "retro"} 
           onClick={onConfirm} 
           ref={confirmButtonRef}
           className={cn(
