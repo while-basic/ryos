@@ -730,3 +730,16 @@
 :root[data-os-theme="macosx"] .macosx-dialog-header {
   border-radius: 7.2px 7.2px 0px 0px !important;
 }
+
+/* macOS Theme Input Styling - Remove tint */
+:root[data-os-theme="macosx"] input {
+  background-color: #ffffff !important;
+}
+
+:root[data-os-theme="macosx"] input:focus {
+  background-color: #ffffff !important;
+}
+
+:root[data-os-theme="macosx"] input:hover {
+  background-color: #ffffff !important;
+}
