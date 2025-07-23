@@ -672,6 +672,23 @@
               0 0 3px rgba(39, 201, 63, 0.5) !important;
 }
 
+/* Inactive window traffic lights */
+:root[data-os-theme="macosx"] .window:not(.is-foreground) .title-bar button[aria-label="Close"],
+:root[data-os-theme="macosx"] .window:not(.is-foreground) .title-bar button[aria-label="Minimize"],
+:root[data-os-theme="macosx"] .window:not(.is-foreground) .title-bar button[aria-label="Maximize"] {
+  background: rgba(0, 0, 0, 0.14) !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) !important;
+}
+
+:root[data-os-theme="macosx"] .window:not(.is-foreground) .title-bar button[aria-label="Close"]:before,
+:root[data-os-theme="macosx"] .window:not(.is-foreground) .title-bar button[aria-label="Minimize"]:before,
+:root[data-os-theme="macosx"] .window:not(.is-foreground) .title-bar button[aria-label="Maximize"]:before,
+:root[data-os-theme="macosx"] .window:not(.is-foreground) .title-bar button[aria-label="Close"]:after,
+:root[data-os-theme="macosx"] .window:not(.is-foreground) .title-bar button[aria-label="Minimize"]:after,
+:root[data-os-theme="macosx"] .window:not(.is-foreground) .title-bar button[aria-label="Maximize"]:after {
+  display: none;
+}
+
 /* macOS Titlebar Border Styling */
 :root[data-os-theme="macosx"] .title-bar {
   border: var(--os-metrics-titlebar-border-width) solid
