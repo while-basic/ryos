@@ -222,10 +222,17 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
       name: SOUNDBOARD_STORE_NAME,
       version: SOUNDBOARD_STORE_VERSION,
       storage: createJSONStorage(() => zustandIndexedDBStorage),
-      // Persist everything to IndexedDB (no strict quota like localStorage).
-      // If you need to further trim data in the future, adjust here.
+      // Persist lightweight metadata only; exclude raw audio blobs which can
+      // consume tens of MB and cause Mobile Safari to crash on
+      // initialization/rehydration.
       partialize: (state) => ({
-        boards: state.boards,
+        boards: state.boards.map((board) => ({
+          ...board,
+          slots: board.slots.map((slot) => ({
+            ...slot,
+            audioData: null, // strip large base-64 payloads
+          })),
+        })),
         activeBoardId: state.activeBoardId,
         selectedDeviceId: state.selectedDeviceId,
         hasInitialized: state.hasInitialized,
