@@ -102,11 +102,12 @@ const DialogContent = React.forwardRef<
         ref={ref}
         className={getDialogContentClasses()}
         style={
-          isMacOsxTheme
-            ? {
-                backgroundImage: `var(--os-pinstripe-window), var(--os-color-window-bg)`,
+           isMacOsxTheme
+             ? {
+                backgroundColor: "var(--os-color-window-bg)",
+                backgroundImage: "var(--os-pinstripe-window)",
               }
-            : undefined
+             : undefined
         }
         onEscapeKeyDown={cleanupPointerEvents}
         onPointerDownOutside={cleanupPointerEvents}
