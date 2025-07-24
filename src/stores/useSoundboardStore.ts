@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { zustandIndexedDBStorage } from "@/utils/zustandIndexedDBStorage";
 import { Soundboard, SoundSlot, PlaybackState } from "@/types/types";
 
 // Helper to create a default soundboard
@@ -220,21 +221,11 @@ export const useSoundboardStore = create<SoundboardStoreState>()(
     {
       name: SOUNDBOARD_STORE_NAME,
       version: SOUNDBOARD_STORE_VERSION,
-      // Persist only lightweight data.  Large base-64 audio blobs can easily
-      // blow past the ~5 MB localStorage quota on Mobile Safari and crash the
-      // app during rehydration.  We therefore strip `audioData` from every
-      // slot before the state is serialized.
+      storage: createJSONStorage(() => zustandIndexedDBStorage),
+      // Persist everything to IndexedDB (no strict quota like localStorage).
+      // If you need to further trim data in the future, adjust here.
       partialize: (state) => ({
-        boards: state.boards.map((board) => ({
-          ...board,
-          slots: board.slots.map((slot) => ({
-            ...slot,
-            // We do NOT persist the raw audio bytes – they will be
-            // re-loaded from the bundled JSON (or freshly recorded) on the
-            // next session.
-            audioData: null,
-          })),
-        })),
+        boards: state.boards,
         activeBoardId: state.activeBoardId,
         selectedDeviceId: state.selectedDeviceId,
         hasInitialized: state.hasInitialized,
