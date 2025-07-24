@@ -1429,7 +1429,7 @@ progress:not([value])::-moz-progress-bar:not([value]) {
 
 /* iPod font isolation (XP theme) */
 .ipod-force-font {
-  font-family: "ChicagoKare", "ArkPixel", "SerenityOS-Emoji", system-ui,
+  font-family: "ChicagoKare", "ArkPixel", system-ui,
     -apple-system, sans-serif !important;
   -webkit-font-smoothing: antialiased;
   font-synthesis: none;
@@ -1437,12 +1437,12 @@ progress:not([value])::-moz-progress-bar:not([value]) {
 
 /* Preserve font-chicago in iPod */
 .ipod-force-font .font-chicago {
-  font-family: "ChicagoKare", "ArkPixel", "SerenityOS-Emoji", system-ui,
+  font-family: "ChicagoKare", "ArkPixel", system-ui,
     -apple-system, sans-serif !important;
 }
 
 /* Preserve font-geneva-12 in iPod */
 .ipod-force-font .font-geneva-12 {
-  font-family: "Geneva-12", "ArkPixel", "SerenityOS-Emoji", system-ui,
+  font-family: "Geneva-12", "ArkPixel", system-ui,
     -apple-system, sans-serif !important;
 }

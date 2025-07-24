@@ -29,9 +29,9 @@
 
 /* System 7 Theme */
 :root[data-os-theme="system7"] {
-  --os-font-ui: "ChicagoKare", Geneva, -apple-system, BlinkMacSystemFont,
+  --os-font-ui: "ChicagoKare", "ArkPixel", "SerenityOS-Emoji", Geneva, -apple-system, BlinkMacSystemFont,
     sans-serif;
-  --os-font-mono: Monaco, monospace;
+  --os-font-mono: Monaco, "ArkPixel", "SerenityOS-Emoji", monospace;
   --os-color-window-bg: #ffffff;
   --os-color-menubar-bg: #ffffff;
   --os-color-menubar-border: #000000;
@@ -147,9 +147,16 @@
 
 /* Windows XP Theme */
 :root[data-os-theme="xp"] {
-  --os-font-ui: Tahoma, Segoe UI, "Pixelated MS Sans Serif", "MS Sans Serif", "ArkPixel", "SerenityOS-Emoji", sans-serif;
+  --os-font-ui: Tahoma, Segoe UI, "Pixelated MS Sans Serif", "MS Sans Serif", "ArkPixel", sans-serif;
   --os-font-mono: Consolas, Courier New, monospace;
-  --font-ms-sans: "Pixelated MS Sans Serif", "MS Sans Serif", "ArkPixel", "SerenityOS-Emoji", system-ui, sans-serif;
+  --font-ms-sans: "Pixelated MS Sans Serif", "MS Sans Serif", "ArkPixel", system-ui, sans-serif;
+  /* Override global font variables to exclude SerenityOS-Emoji */
+  --font-geneva-12: "Geneva-12", "ArkPixel", system-ui;
+  --font-apple-garamond: "AppleGaramond", "ArkPixel", system-ui;
+  --font-mondwest: "Mondwest", "ArkPixel", system-ui;
+  --font-neuebit: "NeueBit", "ArkPixel", system-ui;
+  --font-monaco: "Monaco", "ArkPixel", system-ui;
+  --font-jacquard: "Jacquard", "ArkPixel", system-ui;
   --os-color-window-bg: #ece9d8;
   --os-color-menubar-bg: linear-gradient(to bottom, #245edc, #1941a5);
   --os-color-menubar-border: #0a246a;
@@ -173,6 +180,25 @@
   --os-metrics-titlebar-height: 1.875rem;
   --os-metrics-menubar-height: 1.875rem;
   --os-window-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* XP Theme - Override body font to exclude SerenityOS-Emoji */
+:root[data-os-theme="xp"] body {
+  font-family: "ChicagoKare", "ArkPixel", system-ui, -apple-system, sans-serif;
+}
+
+/* XP Theme - Override utility font classes to exclude SerenityOS-Emoji */
+:root[data-os-theme="xp"] .font-geneva-12 {
+  font-family: "Geneva-12", "ArkPixel", system-ui, -apple-system, sans-serif;
+}
+
+:root[data-os-theme="xp"] .font-neuebit {
+  font-family: "NeueBit", "ArkPixel", "Helvetica", "Arial", "Hiragino Sans", sans-serif;
+}
+
+:root[data-os-theme="xp"] .font-monaco,
+:root[data-os-theme="xp"] .font-monaco-9 {
+  font-family: "Monaco", "ArkPixel", monospace;
 }
 
 /* Backwards compatibility aliases */

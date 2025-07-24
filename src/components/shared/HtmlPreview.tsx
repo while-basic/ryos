@@ -17,6 +17,7 @@ import {
 } from "@/stores/useAppStore";
 import { useSound, Sounds } from "../../hooks/useSound";
 import { useAppStore } from "@/stores/useAppStore";
+import { useThemeStore } from "@/stores/useThemeStore";
 
 // Lazily load shiki only when code view is requested to keep initial bundle smaller
 let shikiModulePromise: Promise<typeof import("shiki")> | null = null;
@@ -176,6 +177,8 @@ export default function HtmlPreview({
   baseUrlForAiContent,
   mode = "now",
 }: HtmlPreviewProps) {
+  const currentTheme = useThemeStore((state) => state.current);
+  const isXpTheme = currentTheme === "xp" || currentTheme === "win98";
   const [isFullScreen, setIsFullScreen] = useState(initialFullScreen);
   const [copySuccess, setCopySuccess] = useState(false);
   const [showCode, setShowCode] = useState(false);
@@ -288,14 +291,35 @@ export default function HtmlPreview({
       theme: {
         extend: {
           fontFamily: {
-            sans: ["Geneva-12", "ArkPixel", "SerenityOS-Emoji", "sans-serif"],
-            mono: ["Monaco", "ArkPixel", "SerenityOS-Emoji", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace"],
-            serif: ["Mondwest", "Yu Mincho", "Hiragino Mincho Pro", "Georgia", "Palatino", "SerenityOS-Emoji", "serif"],
-            emoji: ["SerenityOS-Emoji", "AppleColorEmoji", "AppleColorEmojiFallback"],
-            'geneva': ["Geneva-12", "ArkPixel", "SerenityOS-Emoji", "system-ui", "-apple-system", "sans-serif"],
+            sans: ${isXpTheme 
+              ? '["Geneva-12", "ArkPixel", "sans-serif"]'
+              : '["Geneva-12", "ArkPixel", "SerenityOS-Emoji", "sans-serif"]'
+            },
+            mono: ${isXpTheme
+              ? '["Monaco", "ArkPixel", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace"]'
+              : '["Monaco", "ArkPixel", "SerenityOS-Emoji", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace"]'
+            },
+            serif: ${isXpTheme
+              ? '["Mondwest", "Yu Mincho", "Hiragino Mincho Pro", "Georgia", "Palatino", "serif"]'
+              : '["Mondwest", "Yu Mincho", "Hiragino Mincho Pro", "Georgia", "Palatino", "SerenityOS-Emoji", "serif"]'
+            },
+            emoji: ${isXpTheme
+              ? '["AppleColorEmoji", "AppleColorEmojiFallback", "sans-serif"]'
+              : '["SerenityOS-Emoji", "AppleColorEmoji", "AppleColorEmojiFallback"]'
+            },
+            'geneva': ${isXpTheme
+              ? '["Geneva-12", "ArkPixel", "system-ui", "-apple-system", "sans-serif"]'
+              : '["Geneva-12", "ArkPixel", "SerenityOS-Emoji", "system-ui", "-apple-system", "sans-serif"]'
+            },
             'mondwest': ["Mondwest", "Yu Mincho", "Hiragino Mincho Pro", "Georgia", "Palatino", "Yu Mincho", "Hiragino Mincho Pro", "serif"],
-            'neuebit': ["NeueBit", "ArkPixel", "SerenityOS-Emoji", "Helvetica", "Arial", "Hiragino Sans", "sans-serif"],
-            'monaco': ["Monaco", "ArkPixel", "SerenityOS-Emoji", "monospace"],
+            'neuebit': ${isXpTheme
+              ? '["NeueBit", "ArkPixel", "Helvetica", "Arial", "Hiragino Sans", "sans-serif"]'
+              : '["NeueBit", "ArkPixel", "SerenityOS-Emoji", "Helvetica", "Arial", "Hiragino Sans", "sans-serif"]'
+            },
+            'monaco': ${isXpTheme
+              ? '["Monaco", "ArkPixel", "monospace"]'
+              : '["Monaco", "ArkPixel", "SerenityOS-Emoji", "monospace"]'
+            },
             'jacquard': ["Jacquard", "Yu Mincho", "Hiragino Mincho Pro", "Georgia", "Palatino", "serif"]
           }
         }
