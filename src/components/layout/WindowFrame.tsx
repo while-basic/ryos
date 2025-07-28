@@ -848,7 +848,7 @@ export function WindowFrame({
               }}
             >
               {/* Traffic Light Buttons */}
-              <div className="flex items-center gap-2 ml-1.5">
+              <div className="flex items-center gap-0 ml-0">
                 {/* Close Button (Red) */}
                 <button
                   onClick={(e) => {
@@ -857,19 +857,20 @@ export function WindowFrame({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="cursor-default outline-none flex items-center justify-center relative"
+                  className="cursor-default outline-none flex items-center justify-center relative z-10"
                   style={{
                     width: "24px",
                     height: "24px",
                     margin: "-5.5px 0",
+                    marginRight: "-4px",
                   }}
                   aria-label="Close"
                 >
                   {/* Debug tap target overlay */}
-                  {process.env.NODE_ENV === 'development' && (
+                  {debugMode && (
                     <div
                       className="absolute inset-0 bg-red-500/20 border border-red-500/50 rounded"
-                      style={{ pointerEvents: 'none' }}
+                      style={{ pointerEvents: "none" }}
                     />
                   )}
                   <div
@@ -885,33 +886,33 @@ export function WindowFrame({
                         : "0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.3), inset 0 0 0 0.5px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 2px 3px 1px #bbbbbb",
                     }}
                   >
-                  {/* Top shine */}
-                  <div
-                    className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
-                    style={{
-                      height: "28%",
-                      background:
-                        "linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.3))",
-                      width: "calc(100% - 6px)",
-                      borderRadius: "6px 6px 0 0",
-                      top: "1px",
-                      filter: "blur(0.2px)",
-                      zIndex: 2,
-                    }}
-                  />
-                  {/* Bottom glow */}
-                  <div
-                    className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
-                    style={{
-                      height: "33%",
-                      background:
-                        "linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.5))",
-                      width: "calc(100% - 3px)",
-                      borderRadius: "0 0 6px 6px",
-                      bottom: "1px",
-                      filter: "blur(0.3px)",
-                    }}
-                  />
+                    {/* Top shine */}
+                    <div
+                      className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
+                      style={{
+                        height: "28%",
+                        background:
+                          "linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.3))",
+                        width: "calc(100% - 6px)",
+                        borderRadius: "6px 6px 0 0",
+                        top: "1px",
+                        filter: "blur(0.2px)",
+                        zIndex: 2,
+                      }}
+                    />
+                    {/* Bottom glow */}
+                    <div
+                      className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
+                      style={{
+                        height: "33%",
+                        background:
+                          "linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.5))",
+                        width: "calc(100% - 3px)",
+                        borderRadius: "0 0 6px 6px",
+                        bottom: "1px",
+                        filter: "blur(0.3px)",
+                      }}
+                    />
                   </div>
                 </button>
                 {/* Minimize Button (Yellow) */}
@@ -922,7 +923,7 @@ export function WindowFrame({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="cursor-default outline-none flex items-center justify-center relative"
+                  className="cursor-default outline-none flex items-center justify-center relative z-0"
                   style={{
                     width: "24px",
                     height: "24px",
@@ -931,10 +932,10 @@ export function WindowFrame({
                   aria-label="Minimize"
                 >
                   {/* Debug tap target overlay */}
-                  {process.env.NODE_ENV === 'development' && (
+                  {debugMode && (
                     <div
                       className="absolute inset-0 bg-yellow-500/20 border border-yellow-500/50 rounded"
-                      style={{ pointerEvents: 'none' }}
+                      style={{ pointerEvents: "none" }}
                     />
                   )}
                   <div
@@ -950,33 +951,33 @@ export function WindowFrame({
                         : "0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.3), inset 0 0 0 0.5px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 2px 3px 1px #bbbbbb",
                     }}
                   >
-                  {/* Top shine */}
-                  <div
-                    className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
-                    style={{
-                      height: "28%",
-                      background:
-                        "linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.3))",
-                      width: "calc(100% - 6px)",
-                      borderRadius: "6px 6px 0 0",
-                      top: "1px",
-                      filter: "blur(0.2px)",
-                      zIndex: 2,
-                    }}
-                  />
-                  {/* Bottom glow */}
-                  <div
-                    className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
-                    style={{
-                      height: "33%",
-                      background:
-                        "linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.5))",
-                      width: "calc(100% - 3px)",
-                      borderRadius: "0 0 6px 6px",
-                      bottom: "1px",
-                      filter: "blur(0.3px)",
-                    }}
-                  />
+                    {/* Top shine */}
+                    <div
+                      className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
+                      style={{
+                        height: "28%",
+                        background:
+                          "linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.3))",
+                        width: "calc(100% - 6px)",
+                        borderRadius: "6px 6px 0 0",
+                        top: "1px",
+                        filter: "blur(0.2px)",
+                        zIndex: 2,
+                      }}
+                    />
+                    {/* Bottom glow */}
+                    <div
+                      className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
+                      style={{
+                        height: "33%",
+                        background:
+                          "linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.5))",
+                        width: "calc(100% - 3px)",
+                        borderRadius: "0 0 6px 6px",
+                        bottom: "1px",
+                        filter: "blur(0.3px)",
+                      }}
+                    />
                   </div>
                 </button>
                 {/* Maximize Button (Green) */}
@@ -987,19 +988,20 @@ export function WindowFrame({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="cursor-default outline-none flex items-center justify-center relative"
+                  className="cursor-default outline-none flex items-center justify-center relative z-10"
                   style={{
                     width: "24px",
                     height: "24px",
                     margin: "-5.5px 0",
+                    marginLeft: "-4px",
                   }}
                   aria-label="Maximize"
                 >
                   {/* Debug tap target overlay */}
-                  {process.env.NODE_ENV === 'development' && (
+                  {debugMode && (
                     <div
                       className="absolute inset-0 bg-green-500/20 border border-green-500/50 rounded"
-                      style={{ pointerEvents: 'none' }}
+                      style={{ pointerEvents: "none" }}
                     />
                   )}
                   <div
@@ -1015,33 +1017,33 @@ export function WindowFrame({
                         : "0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.3), inset 0 0 0 0.5px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 2px 3px 1px #bbbbbb",
                     }}
                   >
-                  {/* Top shine */}
-                  <div
-                    className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
-                    style={{
-                      height: "28%",
-                      background:
-                        "linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.3))",
-                      width: "calc(100% - 6px)",
-                      borderRadius: "6px 6px 0 0",
-                      top: "1px",
-                      filter: "blur(0.2px)",
-                      zIndex: 2,
-                    }}
-                  />
-                  {/* Bottom glow */}
-                  <div
-                    className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
-                    style={{
-                      height: "33%",
-                      background:
-                        "linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.5))",
-                      width: "calc(100% - 3px)",
-                      borderRadius: "0 0 6px 6px",
-                      bottom: "1px",
-                      filter: "blur(0.3px)",
-                    }}
-                  />
+                    {/* Top shine */}
+                    <div
+                      className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
+                      style={{
+                        height: "28%",
+                        background:
+                          "linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.3))",
+                        width: "calc(100% - 6px)",
+                        borderRadius: "6px 6px 0 0",
+                        top: "1px",
+                        filter: "blur(0.2px)",
+                        zIndex: 2,
+                      }}
+                    />
+                    {/* Bottom glow */}
+                    <div
+                      className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
+                      style={{
+                        height: "33%",
+                        background:
+                          "linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.5))",
+                        width: "calc(100% - 3px)",
+                        borderRadius: "0 0 6px 6px",
+                        bottom: "1px",
+                        filter: "blur(0.3px)",
+                      }}
+                    />
                   </div>
                 </button>
               </div>
