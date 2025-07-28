@@ -569,7 +569,7 @@ function FullScreenPortal({
             )}
           >
             <span className="text-[16px] md:text-[20px]">
-              {currentKoreanDisplay === "romanized" ? "HAN" : "한"}
+              {currentKoreanDisplay === "romanized" ? "KO" : "한"}
             </span>
           </button>
 

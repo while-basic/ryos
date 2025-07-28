@@ -374,7 +374,7 @@ export function IpodMenuBar({
                     koreanDisplay !== KoreanDisplay.Original && "pl-4"
                   )}
                 >
-                  {koreanDisplay === KoreanDisplay.Original ? "✓ KO" : "KO"}
+                  {koreanDisplay === KoreanDisplay.Original ? "✓ 한글" : "한글"}
                 </span>
               </DropdownMenuItem>
 
