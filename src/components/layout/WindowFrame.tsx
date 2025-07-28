@@ -848,7 +848,7 @@ export function WindowFrame({
               }}
             >
               {/* Traffic Light Buttons */}
-              <div className="flex items-center gap-2 ml-1.5">
+              <div className="flex items-center gap-1 ml-1">
                 {/* Close Button (Red) */}
                 <button
                   onClick={(e) => {
@@ -857,19 +857,26 @@ export function WindowFrame({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="rounded-full relative overflow-hidden cursor-default outline-none box-border"
+                  className="cursor-default outline-none p-1.5 flex items-center justify-center"
                   style={{
-                    width: "13px",
-                    height: "13px",
-                    background: isForeground
-                      ? "linear-gradient(rgb(193, 58, 45), rgb(205, 73, 52))"
-                      : "linear-gradient(rgba(160, 160, 160, 0.625), rgba(255, 255, 255, 0.625))",
-                    boxShadow: isForeground
-                      ? "rgba(0, 0, 0, 0.5) 0px 2px 4px, rgba(0, 0, 0, 0.4) 0px 1px 2px, rgba(225, 70, 64, 0.5) 0px 1px 1px, rgba(0, 0, 0, 0.3) 0px 0px 0px 0.5px inset, rgba(150, 40, 30, 0.8) 0px 1px 3px inset, rgba(225, 70, 64, 0.75) 0px 2px 3px 1px inset"
-                      : "0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.3), inset 0 0 0 0.5px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 2px 3px 1px #bbbbbb",
+                    width: "22px",
+                    height: "22px",
                   }}
                   aria-label="Close"
                 >
+                  <div
+                    className="rounded-full relative overflow-hidden box-border"
+                    style={{
+                      width: "13px",
+                      height: "13px",
+                      background: isForeground
+                        ? "linear-gradient(rgb(193, 58, 45), rgb(205, 73, 52))"
+                        : "linear-gradient(rgba(160, 160, 160, 0.625), rgba(255, 255, 255, 0.625))",
+                      boxShadow: isForeground
+                        ? "rgba(0, 0, 0, 0.5) 0px 2px 4px, rgba(0, 0, 0, 0.4) 0px 1px 2px, rgba(225, 70, 64, 0.5) 0px 1px 1px, rgba(0, 0, 0, 0.3) 0px 0px 0px 0.5px inset, rgba(150, 40, 30, 0.8) 0px 1px 3px inset, rgba(225, 70, 64, 0.75) 0px 2px 3px 1px inset"
+                        : "0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.3), inset 0 0 0 0.5px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 2px 3px 1px #bbbbbb",
+                    }}
+                  >
                   {/* Top shine */}
                   <div
                     className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
@@ -897,6 +904,7 @@ export function WindowFrame({
                       filter: "blur(0.3px)",
                     }}
                   />
+                  </div>
                 </button>
                 {/* Minimize Button (Yellow) */}
                 <button
@@ -906,19 +914,26 @@ export function WindowFrame({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="rounded-full relative overflow-hidden cursor-default outline-none box-border"
+                  className="cursor-default outline-none p-1.5 flex items-center justify-center"
                   style={{
-                    width: "13px",
-                    height: "13px",
-                    background: isForeground
-                      ? "linear-gradient(rgb(202, 130, 13), rgb(253, 253, 149))"
-                      : "linear-gradient(rgba(160, 160, 160, 0.625), rgba(255, 255, 255, 0.625))",
-                    boxShadow: isForeground
-                      ? "rgba(0, 0, 0, 0.5) 0px 2px 4px, rgba(0, 0, 0, 0.4) 0px 1px 2px, rgba(223, 161, 35, 0.5) 0px 1px 1px, rgba(0, 0, 0, 0.3) 0px 0px 0px 0.5px inset, rgb(155, 78, 21) 0px 1px 3px inset, rgb(241, 157, 20) 0px 2px 3px 1px inset"
-                      : "0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.3), inset 0 0 0 0.5px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 2px 3px 1px #bbbbbb",
+                    width: "22px",
+                    height: "22px",
                   }}
                   aria-label="Minimize"
                 >
+                  <div
+                    className="rounded-full relative overflow-hidden box-border"
+                    style={{
+                      width: "13px",
+                      height: "13px",
+                      background: isForeground
+                        ? "linear-gradient(rgb(202, 130, 13), rgb(253, 253, 149))"
+                        : "linear-gradient(rgba(160, 160, 160, 0.625), rgba(255, 255, 255, 0.625))",
+                      boxShadow: isForeground
+                        ? "rgba(0, 0, 0, 0.5) 0px 2px 4px, rgba(0, 0, 0, 0.4) 0px 1px 2px, rgba(223, 161, 35, 0.5) 0px 1px 1px, rgba(0, 0, 0, 0.3) 0px 0px 0px 0.5px inset, rgb(155, 78, 21) 0px 1px 3px inset, rgb(241, 157, 20) 0px 2px 3px 1px inset"
+                        : "0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.3), inset 0 0 0 0.5px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 2px 3px 1px #bbbbbb",
+                    }}
+                  >
                   {/* Top shine */}
                   <div
                     className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
@@ -946,6 +961,7 @@ export function WindowFrame({
                       filter: "blur(0.3px)",
                     }}
                   />
+                  </div>
                 </button>
                 {/* Maximize Button (Green) */}
                 <button
@@ -955,19 +971,26 @@ export function WindowFrame({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="rounded-full relative overflow-hidden cursor-default outline-none box-border"
+                  className="cursor-default outline-none p-1.5 flex items-center justify-center"
                   style={{
-                    width: "13px",
-                    height: "13px",
-                    background: isForeground
-                      ? "linear-gradient(rgb(111, 174, 58), rgb(138, 192, 50))"
-                      : "linear-gradient(rgba(160, 160, 160, 0.625), rgba(255, 255, 255, 0.625))",
-                    boxShadow: isForeground
-                      ? "rgba(0, 0, 0, 0.5) 0px 2px 4px, rgba(0, 0, 0, 0.4) 0px 1px 2px, rgb(59, 173, 29, 0.5) 0px 1px 1px, rgba(0, 0, 0, 0.3) 0px 0px 0px 0.5px inset, rgb(53, 91, 17) 0px 1px 3px inset, rgb(98, 187, 19) 0px 2px 3px 1px inset"
-                      : "0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.3), inset 0 0 0 0.5px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 2px 3px 1px #bbbbbb",
+                    width: "22px",
+                    height: "22px",
                   }}
                   aria-label="Maximize"
                 >
+                  <div
+                    className="rounded-full relative overflow-hidden box-border"
+                    style={{
+                      width: "13px",
+                      height: "13px",
+                      background: isForeground
+                        ? "linear-gradient(rgb(111, 174, 58), rgb(138, 192, 50))"
+                        : "linear-gradient(rgba(160, 160, 160, 0.625), rgba(255, 255, 255, 0.625))",
+                      boxShadow: isForeground
+                        ? "rgba(0, 0, 0, 0.5) 0px 2px 4px, rgba(0, 0, 0, 0.4) 0px 1px 2px, rgb(59, 173, 29, 0.5) 0px 1px 1px, rgba(0, 0, 0, 0.3) 0px 0px 0px 0.5px inset, rgb(53, 91, 17) 0px 1px 3px inset, rgb(98, 187, 19) 0px 2px 3px 1px inset"
+                        : "0 2px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.3), inset 0 0 0 0.5px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 2px 3px 1px #bbbbbb",
+                    }}
+                  >
                   {/* Top shine */}
                   <div
                     className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
@@ -995,6 +1018,7 @@ export function WindowFrame({
                       filter: "blur(0.3px)",
                     }}
                   />
+                  </div>
                 </button>
               </div>
 
