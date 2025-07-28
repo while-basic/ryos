@@ -857,7 +857,7 @@ export function WindowFrame({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="cursor-default outline-none flex items-center justify-center"
+                  className="cursor-default outline-none flex items-center justify-center relative"
                   style={{
                     width: "24px",
                     height: "24px",
@@ -865,6 +865,13 @@ export function WindowFrame({
                   }}
                   aria-label="Close"
                 >
+                  {/* Debug tap target overlay */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div
+                      className="absolute inset-0 bg-red-500/20 border border-red-500/50 rounded"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  )}
                   <div
                     className="rounded-full relative overflow-hidden box-border"
                     style={{
@@ -915,7 +922,7 @@ export function WindowFrame({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="cursor-default outline-none flex items-center justify-center"
+                  className="cursor-default outline-none flex items-center justify-center relative"
                   style={{
                     width: "24px",
                     height: "24px",
@@ -923,6 +930,13 @@ export function WindowFrame({
                   }}
                   aria-label="Minimize"
                 >
+                  {/* Debug tap target overlay */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div
+                      className="absolute inset-0 bg-yellow-500/20 border border-yellow-500/50 rounded"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  )}
                   <div
                     className="rounded-full relative overflow-hidden box-border"
                     style={{
@@ -973,7 +987,7 @@ export function WindowFrame({
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="cursor-default outline-none flex items-center justify-center"
+                  className="cursor-default outline-none flex items-center justify-center relative"
                   style={{
                     width: "24px",
                     height: "24px",
@@ -981,6 +995,13 @@ export function WindowFrame({
                   }}
                   aria-label="Maximize"
                 >
+                  {/* Debug tap target overlay */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div
+                      className="absolute inset-0 bg-green-500/20 border border-green-500/50 rounded"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  )}
                   <div
                     className="rounded-full relative overflow-hidden box-border"
                     style={{
