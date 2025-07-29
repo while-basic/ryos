@@ -12,6 +12,13 @@ interface EmojiAquariumProps {
   className?: string;
 }
 
+interface DynamicBubble {
+  id: string;
+  x: number;
+  y: number;
+  startTime: number;
+}
+
 function useSeededRandom(seed?: string) {
   // Mulberry32 PRNG
   let a = 0;
@@ -47,6 +54,8 @@ export function EmojiAquarium({ seed, className }: EmojiAquariumProps) {
   // Responsive: fill the container width and compute height via aspect ratio.
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(420);
+  const [dynamicBubbles, setDynamicBubbles] = useState<DynamicBubble[]>([]);
+  
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -76,6 +85,28 @@ export function EmojiAquarium({ seed, className }: EmojiAquariumProps) {
 
   const bubbles = "🫧"; // falls back to monochrome when unsupported
 
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    const newBubble: DynamicBubble = {
+      id: `dynamic-${Date.now()}-${Math.random()}`,
+      x,
+      y,
+      startTime: Date.now()
+    };
+    
+    setDynamicBubbles(prev => [...prev, newBubble]);
+    
+    // Remove bubble after animation completes (15 seconds)
+    setTimeout(() => {
+      setDynamicBubbles(prev => prev.filter(b => b.id !== newBubble.id));
+    }, 15000);
+  };
+
   return (
     <MotionConfig reducedMotion="never">
       <div
@@ -86,8 +117,9 @@ export function EmojiAquarium({ seed, className }: EmojiAquariumProps) {
       >
         <div
           ref={containerRef}
-          className={cn("relative z-0 overflow-hidden rounded")}
+          className={cn("relative z-0 overflow-hidden rounded cursor-pointer")}
           style={{ width: "100%", height }}
+          onClick={handleClick}
         >
           {/* small fish */}
           {Array.from({ length: smallCount }).map((_, i) => {
@@ -258,6 +290,35 @@ export function EmojiAquarium({ seed, className }: EmojiAquariumProps) {
                   willChange: "transform, opacity",
                 }}
                 className="text-[28px] select-none z-10"
+              >
+                {bubbles}
+              </motion.span>
+            );
+          })}
+
+          {/* dynamic bubbles */}
+          {dynamicBubbles.map((bubble) => {
+            const drift = (Math.random() - 0.5) * 30;
+            const dur = 12 + Math.random() * 6;
+            return (
+              <motion.span
+                key={bubble.id}
+                initial={{ x: bubble.x, y: bubble.y, opacity: 0, scale: 0.3 }}
+                animate={{
+                  x: [bubble.x, bubble.x + drift],
+                  y: [bubble.y, -25],
+                  opacity: [0, 0.5, 0.8, 0.6, 0],
+                  scale: [0.3, 0.6, 1, 1.2, 0.8],
+                }}
+                transition={{
+                  duration: dur,
+                  ease: "easeOut",
+                }}
+                style={{
+                  position: "absolute",
+                  willChange: "transform, opacity",
+                }}
+                className="text-[32px] select-none z-40 pointer-events-none"
               >
                 {bubbles}
               </motion.span>
