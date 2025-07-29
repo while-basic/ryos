@@ -1362,6 +1362,26 @@
   background-color: #e5e7eb !important; /* gray-200 */
 }
 
+/* Urgent message animation for macOS theme - uses CSS animation since !important backgrounds override inline styles */
+:root[data-os-theme="macosx"] .chat-bubble.urgent-message {
+  animation: macos-urgent-flash 1s ease-in-out 2;
+}
+
+@keyframes macos-urgent-flash {
+  0% {
+    background-color: inherit !important;
+    color: inherit !important;
+  }
+  50% {
+    background-color: #fee2e2 !important; /* red-100 */
+    color: #991b1b !important; /* red-800 */
+  }
+  100% {
+    background-color: inherit !important;
+    color: inherit !important;
+  }
+}
+
 :root[data-os-theme="macosx"] .macosx-link-preview.chat-bubble:before {
   top: 2px; /* extend shine to very top when image flush */
   left: 8px;

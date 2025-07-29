@@ -923,21 +923,19 @@ function ChatMessagesContent({
                 layout="position"
                 initial={{ opacity: 0 }}
                 animate={
-                  isUrgentMessage(message.content)
-                    ? currentTheme === "macosx"
-                      ? { opacity: 1 }
-                      : {
-                          backgroundColor: ["#fee2e2", baseBgHex],
-                          color: ["#C92D2D", "#000000"],
-                          opacity: 1,
-                          transition: {
-                            duration: 1,
-                            repeat: 1,
-                            repeatType: "reverse",
-                            ease: "easeInOut",
-                            delay: 0,
-                          },
-                        }
+                  isUrgentMessage(message.content) && currentTheme !== "macosx"
+                    ? {
+                        backgroundColor: ["#fee2e2", baseBgHex],
+                        color: ["#C92D2D", "#000000"],
+                        opacity: 1,
+                        transition: {
+                          duration: 1,
+                          repeat: 1,
+                          repeatType: "reverse",
+                          ease: "easeInOut",
+                          delay: 0,
+                        },
+                      }
                     : { opacity: 1 }
                 }
                 className={`${`p-1.5 px-2 chat-bubble ${
@@ -945,6 +943,10 @@ function ChatMessagesContent({
                   (message.role === "user"
                     ? "bg-yellow-100 text-black"
                     : "bg-blue-100 text-black")
+                } ${
+                  isUrgentMessage(message.content) && currentTheme === "macosx"
+                    ? "urgent-message"
+                    : ""
                 } ${
                   isHtmlCodeBlock(message.content).isHtml ||
                   message.parts?.some(
