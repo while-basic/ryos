@@ -1,6 +1,7 @@
 import { useMemo, useLayoutEffect, useRef, useState, useEffect } from "react";
 import { motion, MotionConfig } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useThemeStore } from "@/stores/useThemeStore";
 
 type AquariumSize = "small" | "medium" | "large";
 type AquariumDensity = "calm" | "default" | "crowded";
@@ -30,6 +31,9 @@ function useSeededRandom(seed?: string) {
 }
 
 export function EmojiAquarium({ seed, className }: EmojiAquariumProps) {
+  const currentTheme = useThemeStore((state) => state.current);
+  const isMacOSXTheme = currentTheme === "macosx";
+  
   // Create a stable seed once so re-renders (e.g., hover) don't change layout.
   const seedRef = useRef<string | undefined>(seed);
   if (seedRef.current === undefined) {
@@ -86,7 +90,10 @@ export function EmojiAquarium({ seed, className }: EmojiAquariumProps) {
       >
         <div
           ref={containerRef}
-          className={cn("relative z-0 overflow-hidden rounded")}
+          className={cn(
+            "relative z-0 overflow-hidden",
+            isMacOSXTheme ? "rounded" : "rounded-lg"
+          )}
           style={{ width: "100%", height }}
         >
           {/* small fish */}
