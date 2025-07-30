@@ -605,7 +605,9 @@ export function WindowFrame({
               resizeType?.includes("s")
                 ? "bottom-[-100px] h-[200px]"
                 : isMobile
-                ? "bottom-0 h-6"
+                ? currentTheme === "macosx"
+                  ? "bottom-[-4px] h-4" // Extend below window for macOS
+                  : "bottom-0 h-6"
                 : "bottom-1 h-2"
             )}
             onMouseDown={(e) =>
