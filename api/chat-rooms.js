@@ -2480,7 +2480,7 @@ async function handleGetUsers(requestId, searchQuery = "") {
 }
 
 async function handleSendMessage(data, requestId) {
-  const { roomId, username: originalUsername, content: originalContent } = data;
+  const { roomId, username: originalUsername, content: originalContent, toolCalls } = data;
   const username = originalUsername?.toLowerCase(); // Normalize
 
   // Validate identifiers early
@@ -2684,6 +2684,7 @@ async function handleSendMessage(data, requestId) {
       username,
       content,
       timestamp: getCurrentTimestamp(),
+      ...(toolCalls && toolCalls.length > 0 && { toolCalls }),
     };
 
     // Store message as stringified JSON in the list

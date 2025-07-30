@@ -5,6 +5,13 @@ export type ChatMessage = {
   username: string;
   content: string;
   timestamp: number;
+  toolCalls?: Array<{
+    toolCallId: string;
+    toolName: string;
+    args?: Record<string, unknown>;
+    state: string;
+    result?: unknown;
+  }>;
 };
 
 export type ChatRoom = {

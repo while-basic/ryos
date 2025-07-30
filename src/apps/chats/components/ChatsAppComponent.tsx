@@ -37,6 +37,16 @@ interface DisplayMessage extends Omit<UIMessage, "role"> {
   role: UIMessage["role"] | "human";
   createdAt?: Date; // Ensure createdAt is optional Date
   serverId?: string; // Real server ID for room messages
+  parts?: Array<{
+    type: "tool-invocation" | "text";
+    toolInvocation?: {
+      toolCallId: string;
+      toolName: string;
+      args?: Record<string, unknown>;
+      state: string;
+      result?: unknown;
+    };
+  }>;
 }
 
 export function ChatsAppComponent({
@@ -494,6 +504,17 @@ export function ChatsAppComponent({
         content: msg.content,
         createdAt: new Date(msg.timestamp), // Ensure this is a Date object
         username: msg.username,
+        // Convert tool calls to parts format for ChatMessages compatibility
+        parts: msg.toolCalls?.map((tc) => ({
+          type: "tool-invocation" as const,
+          toolInvocation: {
+            toolCallId: tc.toolCallId,
+            toolName: tc.toolName,
+            args: tc.args,
+            state: tc.state,
+            result: tc.result,
+          },
+        })),
       }))
     : messages.map((msg: UIMessage) => ({
         ...msg,
