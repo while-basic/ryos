@@ -584,7 +584,7 @@ export function WindowFrame({
                 ? isXpTheme
                   ? "top-0 h-4" // Start from top but be shorter for XP/98 themes
                   : currentTheme === "macosx"
-                  ? "top-6 h-8" // Start below title bar for macOS to avoid traffic lights
+                  ? "top-[-8px] h-8" // Extend above window for macOS to avoid traffic lights
                   : "top-0 h-8"
                 : "top-1 h-2"
             )}
