@@ -1,7 +1,8 @@
 import { Redis } from "@upstash/redis";
 import { Filter } from "bad-words";
 import Pusher from "pusher";
-// Use Web Crypto API for Edge Runtime compatibility
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 
@@ -81,7 +82,7 @@ const generateRequestId = (): string => {
 };
 
 // API runtime config
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const maxDuration = 15;
 
 // Redis key prefixes
@@ -270,11 +271,7 @@ const getUserPasswordHash = async (username: string): Promise<string | null> => 
  * Generate a secure authentication token
  */
 const generateAuthToken = (): string => {
-  const bytes = new Uint8Array(TOKEN_LENGTH);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+  return crypto.randomBytes(TOKEN_LENGTH).toString("hex");
 };
 
 // ---------------------------------------------------------------------------
@@ -815,12 +812,7 @@ async function getDetailedRooms(): Promise<RoomWithUsers[]> {
 
 // Helper functions
 const generateId = (): string => {
-  // 128-bit random identifier encoded as hex (32 chars)
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+  return crypto.randomBytes(16).toString("hex");
 };
 
 const getCurrentTimestamp = (): number => {
