@@ -2953,31 +2953,242 @@ async function handleResetUserCounts(username: string, requestId: string): Promi
 }
 
 async function handleAuthenticateWithPassword(data: AuthenticateWithPasswordBody, requestId: string): Promise<Response> {
-  // Implementation in original file - adding stub for now
-  return createErrorResponse("Not implemented", 501);
+  const { username: originalUsername, password, oldToken } = data;
+
+  if (!originalUsername || !password) {
+    logInfo(requestId, "Auth failed: Username and password are required");
+    return createErrorResponse("Username and password are required", 400);
+  }
+
+  // Normalize username to lowercase
+  const username = originalUsername.toLowerCase();
+
+  logInfo(requestId, `Authenticating user with password: ${username}`);
+  try {
+    // Check if user exists
+    const userKey = `${CHAT_USERS_PREFIX}${username}`;
+    const userData = await redis.get(userKey);
+
+    if (!userData) {
+      logInfo(requestId, `User not found: ${username}`);
+      return createErrorResponse("Invalid username or password", 401);
+    }
+
+    // Get password hash
+    const passwordHash = await getUserPasswordHash(username);
+
+    if (!passwordHash) {
+      logInfo(requestId, `No password set for user: ${username}`);
+      return createErrorResponse("Invalid username or password", 401);
+    }
+
+    // Verify password
+    const isValid = await verifyPassword(password, passwordHash);
+
+    if (!isValid) {
+      logInfo(requestId, `Invalid password for user: ${username}`);
+      return createErrorResponse("Invalid username or password", 401);
+    }
+
+    // Remove previous token mapping from this device if provided
+    if (oldToken) {
+      await deleteToken(oldToken);
+      await storeLastValidToken(
+        username,
+        oldToken,
+        Date.now(),
+        TOKEN_GRACE_PERIOD
+      );
+    }
+
+    // Generate new token
+    const authToken = generateAuthToken();
+    const tokenKey = `${AUTH_TOKEN_PREFIX}${username}`;
+
+    // Store token with expiration
+    await redis.set(tokenKey, authToken, { ex: USER_EXPIRATION_TIME });
+
+    // Persist token -> username mapping
+    await storeToken(username, authToken);
+
+    // Predictive last-token entry for this new token so it can be refreshed after expiry
+    await storeLastValidToken(
+      username,
+      authToken,
+      Date.now() + USER_EXPIRATION_TIME * 1000,
+      USER_EXPIRATION_TIME + TOKEN_GRACE_PERIOD
+    );
+
+    logInfo(
+      requestId,
+      `Password authentication successful for user ${username}`
+    );
+
+    return new Response(JSON.stringify({ token: authToken, username }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    logError(requestId, `Error authenticating user ${username}:`, error);
+    return createErrorResponse("Failed to authenticate", 500);
+  }
 }
 
 async function handleSetPassword(data: SetPasswordBody, username: string, requestId: string): Promise<Response> {
-  // Implementation in original file - adding stub for now
-  return createErrorResponse("Not implemented", 501);
+  const { password } = data;
+
+  if (!password) {
+    logInfo(requestId, "Set password failed: Password is required");
+    return createErrorResponse("Password is required", 400);
+  }
+
+  // Validate password length
+  if (password.length < PASSWORD_MIN_LENGTH) {
+    logInfo(
+      requestId,
+      `Set password failed: Password too short: ${password.length} chars (min: ${PASSWORD_MIN_LENGTH})`
+    );
+    return createErrorResponse(
+      `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
+      400
+    );
+  }
+
+  logInfo(requestId, `Setting password for user: ${username}`);
+  try {
+    // Hash and store password
+    const passwordHash = await hashPassword(password);
+    await setUserPasswordHash(username, passwordHash);
+
+    logInfo(requestId, `Password set successfully for user ${username}`);
+
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    logError(requestId, `Error setting password for user ${username}:`, error);
+    return createErrorResponse("Failed to set password", 500);
+  }
 }
 
 async function handleCheckPassword(username: string, requestId: string): Promise<Response> {
-  // Implementation in original file - adding stub for now
-  return createErrorResponse("Not implemented", 501);
+  logInfo(requestId, `Checking if password is set for user: ${username}`);
+
+  try {
+    const passwordHash = await getUserPasswordHash(username);
+    const hasPassword = !!passwordHash;
+
+    return new Response(
+      JSON.stringify({
+        hasPassword,
+        username: username,
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    logError(requestId, `Error checking password for user ${username}:`, error);
+    return createErrorResponse("Failed to check password status", 500);
+  }
 }
 
 async function handleListTokens(username: string, request: Request, requestId: string): Promise<Response> {
-  // Implementation in original file - adding stub for now
-  return createErrorResponse("Not implemented", 501);
+  logInfo(requestId, `Listing active tokens for user: ${username}`);
+
+  try {
+    const tokens = await getUserTokens(username);
+
+    // Add information about which token is being used for current request
+    const { token: currentToken } = extractAuth(request);
+
+    const tokenList = tokens.map((t) => ({
+      ...t,
+      isCurrent: t.token === currentToken,
+      // Mask token for security - only show last 8 characters
+      maskedToken: `...${t.token.slice(-8)}`,
+    }));
+
+    logInfo(
+      requestId,
+      `Found ${tokenList.length} active tokens for user ${username}`
+    );
+
+    return new Response(
+      JSON.stringify({
+        tokens: tokenList,
+        count: tokenList.length,
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    logError(requestId, `Error listing tokens for user ${username}:`, error);
+    return createErrorResponse("Failed to list tokens", 500);
+  }
 }
 
 async function handleLogoutAllDevices(username: string, request: Request, requestId: string): Promise<Response> {
-  // Implementation in original file - adding stub for now
-  return createErrorResponse("Not implemented", 501);
+  logInfo(requestId, `Logging out all devices for user: ${username}`);
+
+  try {
+    // Get current token to exclude it (optional - we could log out all including current)
+    const { token: currentToken } = extractAuth(request);
+
+    // Delete all tokens for the user
+    const deletedCount = await deleteAllUserTokens(username);
+
+    // Optionally: restore current token if we want to keep current session active
+    // await storeToken(username, currentToken);
+
+    logInfo(requestId, `Deleted ${deletedCount} tokens for user ${username}`);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Logged out from ${deletedCount} devices`,
+        deletedCount,
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    logError(
+      requestId,
+      `Error logging out all devices for user ${username}:`,
+      error
+    );
+    return createErrorResponse("Failed to logout all devices", 500);
+  }
 }
 
 async function handleLogoutCurrent(username: string, token: string, requestId: string): Promise<Response> {
-  // Implementation in original file - adding stub for now
-  return createErrorResponse("Not implemented", 501);
+  logInfo(requestId, `Logging out current session for user: ${username}`);
+
+  try {
+    // Delete the current token for the user
+    await deleteToken(token);
+
+    logInfo(requestId, `Current session logged out for user: ${username}`);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Logged out from current session`,
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    logError(
+      requestId,
+      `Error logging out current session for user ${username}:`,
+      error
+    );
+    return createErrorResponse("Failed to logout current session", 500);
+  }
 }
