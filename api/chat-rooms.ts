@@ -81,7 +81,7 @@ const generateRequestId = (): string => {
 };
 
 // API runtime config
-export const runtime = "nodejs";
+export const runtime = "edge";
 export const maxDuration = 15;
 
 // Redis key prefixes
