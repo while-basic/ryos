@@ -163,7 +163,7 @@ export default async function handler(req: Request) {
   const month = searchParams.get("month");
   const requestId = generateRequestId(); // Generate request ID
   const origin = req.headers.get("origin");
-  const ALLOWED_ORIGINS = new Set(["https://os.ryo.lu", "http://localhost:3000"]);
+  const ALLOWED_ORIGINS = new Set(["https://os.ryo.lu", "https://ryo.lu", "http://localhost:3000"]);
   if (!origin || !ALLOWED_ORIGINS.has(origin)) {
     return new Response("Unauthorized", { status: 403 });
   }
