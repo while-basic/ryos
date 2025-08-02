@@ -257,7 +257,7 @@ export function EmojiAquarium({ seed, className }: EmojiAquariumProps) {
                   position: "absolute",
                   willChange: "transform, opacity",
                 }}
-                className="text-[28px] select-none z-10"
+                className="text-[28px] select-none z-40"
               >
                 {bubbles}
               </motion.span>
