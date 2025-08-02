@@ -63,8 +63,8 @@ export function EmojiAquarium({ seed, className }: EmojiAquariumProps) {
   // Scale sand height with container for a larger, responsive base
   const sandHeight = Math.max(24, Math.round(height * 0.35));
 
-  const { fishCount, jellyCount, bubbleCount, floorCount } = useMemo(() => {
-    return { fishCount: 8, jellyCount: 3, bubbleCount: 5, floorCount: 7 };
+  const { jellyCount, bubbleCount, floorCount } = useMemo(() => {
+    return { jellyCount: 3, bubbleCount: 5, floorCount: 7 };
   }, []);
 
   const largeCount = 2;
