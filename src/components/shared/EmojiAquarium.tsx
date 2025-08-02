@@ -64,11 +64,11 @@ export function EmojiAquarium({ seed, className }: EmojiAquariumProps) {
   const sandHeight = Math.max(24, Math.round(height * 0.35));
 
   const { fishCount, jellyCount, bubbleCount, floorCount } = useMemo(() => {
-    return { fishCount: 6, jellyCount: 3, bubbleCount: 4, floorCount: 7 };
+    return { fishCount: 8, jellyCount: 3, bubbleCount: 5, floorCount: 7 };
   }, []);
 
-  const largeCount = Math.max(1, Math.floor(fishCount / 3));
-  const smallCount = Math.max(0, fishCount - largeCount);
+  const largeCount = 2;
+  const smallCount = 6;
 
   const smallFishes = ["🐟", "🐠", "🐡"];
   const largeFishes = ["🦈", "🐬"];
@@ -230,8 +230,8 @@ export function EmojiAquarium({ seed, className }: EmojiAquariumProps) {
             );
           })}
 
-          {/* bubbles rising */}
-          {Array.from({ length: bubbleCount }).map((_, i) => {
+          {/* bubbles rising - back layer */}
+          {Array.from({ length: Math.floor(bubbleCount / 2) }).map((_, i) => {
             const x = 10 + rand() * (width - 20);
             const start = rand() * (height * 0.65);
             const drift = (rand() - 0.5) * 20;
@@ -239,7 +239,41 @@ export function EmojiAquarium({ seed, className }: EmojiAquariumProps) {
             const delay = rand() * 6;
             return (
               <motion.span
-                key={`bubble-${i}`}
+                key={`bubble-back-${i}`}
+                initial={{ x, y: height - start, opacity: 0, scale: 0.4 }}
+                animate={{
+                  x: [x, x + drift],
+                  y: [height - start, -25],
+                  opacity: [0, 0.25, 0.5, 0.3, 0],
+                  scale: [0.4, 0.7, 1.0, 0.9, 0.5],
+                }}
+                transition={{
+                  duration: dur,
+                  ease: "easeOut",
+                  repeat: Infinity,
+                  delay,
+                }}
+                style={{
+                  position: "absolute",
+                  willChange: "transform, opacity",
+                }}
+                className="text-[24px] select-none z-25"
+              >
+                {bubbles}
+              </motion.span>
+            );
+          })}
+
+          {/* bubbles rising - front layer */}
+          {Array.from({ length: Math.ceil(bubbleCount / 2) }).map((_, i) => {
+            const x = 10 + rand() * (width - 20);
+            const start = rand() * (height * 0.65);
+            const drift = (rand() - 0.5) * 20;
+            const dur = 15 + rand() * 18;
+            const delay = rand() * 6;
+            return (
+              <motion.span
+                key={`bubble-front-${i}`}
                 initial={{ x, y: height - start, opacity: 0, scale: 0.4 }}
                 animate={{
                   x: [x, x + drift],
