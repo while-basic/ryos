@@ -44,8 +44,6 @@ interface LyricsDisplayProps {
   fontClassName?: string;
   /** Optional inline styles for the outer container (e.g., dynamic gap) */
   containerStyle?: CSSProperties;
-  /** Whether to apply safe area padding for fullscreen mode */
-  useSafeAreaPadding?: boolean;
 }
 
 const ANIMATION_CONFIG = {
@@ -175,7 +173,6 @@ export function LyricsDisplay({
   gapClass = "gap-2",
   fontClassName = "font-geneva-12",
   containerStyle,
-  useSafeAreaPadding = true,
 }: LyricsDisplayProps) {
   const chineseConverter = useMemo(
     () => Converter({ from: "cn", to: "tw" }),
@@ -373,7 +370,7 @@ export function LyricsDisplay({
     <motion.div
       layout={alignment === LyricsAlignment.Alternating}
       transition={ANIMATION_CONFIG.spring}
-      className={`absolute inset-x-0 mx-auto top-0 left-0 right-0 bottom-0 w-full h-full overflow-hidden flex flex-col items-center justify-end ${gapClass} z-40 select-none px-0 ${bottomPaddingClass} pl-safe pr-safe`}
+      className={`absolute inset-x-0 mx-auto top-0 left-0 right-0 bottom-0 w-full h-full overflow-hidden flex flex-col items-center justify-end ${gapClass} z-40 select-none px-0 ${bottomPaddingClass}`}
       style={{
         ...(containerStyle || {}),
         pointerEvents: interactive ? "auto" : "none",
