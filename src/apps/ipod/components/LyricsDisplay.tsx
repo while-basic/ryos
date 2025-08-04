@@ -44,6 +44,8 @@ interface LyricsDisplayProps {
   fontClassName?: string;
   /** Optional inline styles for the outer container (e.g., dynamic gap) */
   containerStyle?: CSSProperties;
+  /** Whether to apply safe area padding for fullscreen mode */
+  useSafeAreaPadding?: boolean;
 }
 
 const ANIMATION_CONFIG = {
@@ -173,6 +175,7 @@ export function LyricsDisplay({
   gapClass = "gap-2",
   fontClassName = "font-geneva-12",
   containerStyle,
+  useSafeAreaPadding = true,
 }: LyricsDisplayProps) {
   const chineseConverter = useMemo(
     () => Converter({ from: "cn", to: "tw" }),
