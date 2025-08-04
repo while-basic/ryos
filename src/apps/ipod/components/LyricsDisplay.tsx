@@ -370,7 +370,7 @@ export function LyricsDisplay({
     <motion.div
       layout={alignment === LyricsAlignment.Alternating}
       transition={ANIMATION_CONFIG.spring}
-      className={`absolute inset-x-0 mx-auto top-0 left-0 right-0 bottom-0 w-full h-full overflow-hidden flex flex-col items-center justify-end ${gapClass} z-40 select-none px-0 ${bottomPaddingClass}`}
+      className={`absolute inset-x-0 mx-auto top-0 left-0 right-0 bottom-0 w-full h-full overflow-hidden flex flex-col items-center justify-end ${gapClass} z-40 select-none px-0 ${bottomPaddingClass} pl-safe pr-safe`}
       style={{
         ...(containerStyle || {}),
         pointerEvents: interactive ? "auto" : "none",
