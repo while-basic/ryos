@@ -17,7 +17,7 @@ import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
 import { ChatRoomSidebar } from "./ChatRoomSidebar";
 import { useChatsStore } from "@/stores/useChatsStore";
-import { type Message as UIMessage } from "ai/react";
+import { type Message as UIMessage } from '@ai-sdk/react';
 import {
   type ChatMessage as AppChatMessage,
   type ChatRoom,
@@ -781,7 +781,7 @@ export function ChatsAppComponent({
                     )
                   ) : (
                     // AI Chat or in a room with username set
-                    (() => {
+                    ((() => {
                       const userMessages = aiMessages.filter(
                         (msg: UIMessage) => msg.role === "user"
                       );
@@ -807,7 +807,7 @@ export function ChatsAppComponent({
                           needsUsername={needsUsername && !username}
                         />
                       );
-                    })()
+                    })())
                   )}
                 </div>
               </div>

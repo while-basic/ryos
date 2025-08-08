@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { type Message } from "ai/react";
+import { type Message } from '@ai-sdk/react';
 import { type ChatRoom, type ChatMessage } from "@/types/chat";
 
 // Recovery mechanism - uses different prefix to avoid reset

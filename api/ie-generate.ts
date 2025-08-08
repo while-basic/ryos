@@ -1,4 +1,11 @@
-import { streamText, smoothStream, type Message, CoreMessage } from "ai";
+import {
+  streamText,
+  smoothStream,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  convertToModelMessages,
+  type UIMessage,
+} from "ai";
 import * as RateLimit from "./utils/rate-limit";
 import { getEffectiveOrigin, isAllowedOrigin, preflightIfNeeded } from "./utils/cors.js";
 import { SupportedModel, DEFAULT_MODEL, getModelInstance } from "./utils/aiModels";
@@ -40,7 +47,7 @@ const generateRequestId = (): string => Math.random().toString(36).substring(2, 
 interface IEGenerateRequestBody {
   url?: string;
   year?: string;
-  messages?: Message[];
+  messages?: UIMessage[];
   model?: SupportedModel;
 }
 
@@ -262,64 +269,67 @@ export default async function handler(req: Request) {
     const systemPrompt = getDynamicSystemPrompt(effectiveYear, rawUrl ?? null);
 
     // Prepend the dynamic prompt as a system message
-    const enrichedMessages = [
+    const enrichedMessages: UIMessage[] = [
       { role: "system", content: systemPrompt },
       ...messages,
     ];
 
-    const result = streamText({
-      model: selectedModel,
-      system: STATIC_SYSTEM_PROMPT,
-      messages: enrichedMessages as CoreMessage[],
-      // We assume prompt/messages already include necessary system/user details
-      temperature: 0.7,
-      maxTokens: 4000,
-      experimental_transform: smoothStream(),
-      onFinish: async ({ text }) => {
-        if (!cacheKey) {
-          logInfo(requestId, 'No cacheKey available, skipping cache save');
-          return;
-        }
-        try {
-          // Attempt to extract HTML inside fenced block
-          let cleaned = text.trim();
-          const blockMatch = cleaned.match(/```(?:html)?\s*([\s\S]*?)```/);
-          if (blockMatch) {
-            cleaned = blockMatch[1].trim();
-          } else {
-            // Remove any stray fences if present
-            cleaned = cleaned.replace(/```(?:html)?\s*/g, "").replace(/```/g, "").trim();
-          }
-          // Remove duplicate TITLE comments beyond first
-          const titleCommentMatch = cleaned.match(/<!--\s*TITLE:[\s\S]*?-->/);
-          if (titleCommentMatch) {
-            const titleComment = titleCommentMatch[0];
-            // Remove any additional copies of title comment
-            cleaned = titleComment + cleaned.replace(new RegExp(titleComment, "g"), "");
-          }
-          await redis.lpush(cacheKey, cleaned);
-          await redis.ltrim(cacheKey, 0, 4);
-          logInfo(requestId, `Cached result for ${cacheKey} (length=${cleaned.length})`);
-          const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - startTime;
-          logInfo(requestId, `Request completed in ${duration.toFixed(2)}ms (generated)`);
-        } catch (cacheErr) {
-          logError(requestId, 'Cache write error', cacheErr);
-          logInfo(requestId, 'Failed to cache HTML, length', text?.length);
-        }
+    const stream = createUIMessageStream({
+      async execute({ writer }) {
+        const result = streamText({
+          model: selectedModel,
+          system: STATIC_SYSTEM_PROMPT,
+          messages: convertToModelMessages(enrichedMessages),
+          temperature: 0.7,
+          maxOutputTokens: 4000,
+          experimental_transform: smoothStream(),
+          onFinish: async ({ text }) => {
+            if (!cacheKey) {
+              logInfo(requestId, 'No cacheKey available, skipping cache save');
+              return;
+            }
+            try {
+              // Attempt to extract HTML inside fenced block
+              let cleaned = text.trim();
+              const blockMatch = cleaned.match(/```(?:html)?\s*([\s\S]*?)```/);
+              if (blockMatch) {
+                cleaned = blockMatch[1].trim();
+              } else {
+                // Remove any stray fences if present
+                cleaned = cleaned.replace(/```(?:html)?\s*/g, "").replace(/```/g, "").trim();
+              }
+              // Remove duplicate TITLE comments beyond first
+              const titleCommentMatch = cleaned.match(/<!--\s*TITLE:[\s\S]*?-->/);
+              if (titleCommentMatch) {
+                const titleComment = titleCommentMatch[0];
+                // Remove any additional copies of title comment
+                cleaned = titleComment + cleaned.replace(new RegExp(titleComment, "g"), "");
+              }
+              await redis.lpush(cacheKey, cleaned);
+              await redis.ltrim(cacheKey, 0, 4);
+              logInfo(requestId, `Cached result for ${cacheKey} (length=${cleaned.length})`);
+              const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - startTime;
+              logInfo(requestId, `Request completed in ${duration.toFixed(2)}ms (generated)`);
+            } catch (cacheErr) {
+              logError(requestId, 'Cache write error', cacheErr);
+              logInfo(requestId, 'Failed to cache HTML, length', text?.length);
+            }
+          },
+        });
+
+        writer.merge(result.toUIMessageStream());
       },
     });
 
-    const response = result.toDataStreamResponse();
+    const response = createUIMessageStreamResponse({ stream });
 
     const headers = new Headers(response.headers);
     headers.set("Access-Control-Allow-Origin", effectiveOrigin!);
 
-    const resp = new Response(response.body, {
+    return new Response(response.body, {
       status: response.status,
       headers,
     });
-
-    return resp;
   } catch (error) {
     const requestId = generateRequestId(); // fallback id
     logError(requestId, 'IE Generate API error', error);

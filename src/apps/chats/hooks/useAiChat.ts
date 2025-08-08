@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useChat, type Message } from "ai/react";
+import { useChat, type Message } from '@ai-sdk/react';
 import { useChatsStore } from "../../../stores/useChatsStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { useInternetExplorerStore } from "@/stores/useInternetExplorerStore";
@@ -382,7 +382,7 @@ export function useAiChat(onPromptSetUsername?: () => void) {
             return "Aquarium ready";
           }
           case "switchTheme": {
-            const { theme } = toolCall.args as { theme?: OsThemeId };
+            const { theme } = toolCall.input as { theme?: OsThemeId };
             if (!theme) {
               console.error(
                 "[ToolCall] switchTheme: Missing required 'theme' parameter"
@@ -401,7 +401,7 @@ export function useAiChat(onPromptSetUsername?: () => void) {
             return `Switched theme to ${name}.`;
           }
           case "launchApp": {
-            const { id, url, year } = toolCall.args as {
+            const { id, url, year } = toolCall.input as {
               id: string;
               url?: string;
               year?: string;
@@ -434,7 +434,7 @@ export function useAiChat(onPromptSetUsername?: () => void) {
             return confirmationMessage + ".";
           }
           case "closeApp": {
-            const { id } = toolCall.args as { id: string };
+            const { id } = toolCall.input as { id: string };
 
             // Validate required parameter
             if (!id) {
@@ -469,7 +469,7 @@ export function useAiChat(onPromptSetUsername?: () => void) {
             }).`;
           }
           case "textEditSearchReplace": {
-            const { search, replace, isRegex, instanceId } = toolCall.args as {
+            const { search, replace, isRegex, instanceId } = toolCall.input as {
               search: string;
               replace: string;
               isRegex?: boolean;
@@ -593,7 +593,7 @@ export function useAiChat(onPromptSetUsername?: () => void) {
             }
           }
           case "textEditInsertText": {
-            const { text, position, instanceId } = toolCall.args as {
+            const { text, position, instanceId } = toolCall.input as {
               text: string;
               position?: "start" | "end";
               instanceId?: string;
@@ -700,7 +700,7 @@ export function useAiChat(onPromptSetUsername?: () => void) {
             }
           }
           case "textEditNewFile": {
-            const { title } = toolCall.args as {
+            const { title } = toolCall.input as {
               title?: string;
             };
 
@@ -726,7 +726,7 @@ export function useAiChat(onPromptSetUsername?: () => void) {
             }.`;
           }
           case "ipodPlayPause": {
-            const { action } = toolCall.args as {
+            const { action } = toolCall.input as {
               action?: "play" | "pause" | "toggle";
             };
             console.log("[ToolCall] ipodPlayPause:", { action });
@@ -760,7 +760,7 @@ export function useAiChat(onPromptSetUsername?: () => void) {
             return nowPlaying ? "iPod is now playing." : "iPod is paused.";
           }
           case "ipodPlaySong": {
-            const { id, title, artist } = toolCall.args as {
+            const { id, title, artist } = toolCall.input as {
               id?: string;
               title?: string;
               artist?: string;
@@ -872,7 +872,7 @@ export function useAiChat(onPromptSetUsername?: () => void) {
             return `Playing ${trackDesc}.`;
           }
           case "ipodAddAndPlaySong": {
-            const { id } = toolCall.args as { id: string };
+            const { id } = toolCall.input as { id: string };
 
             // Validate required parameter
             if (!id) {
@@ -978,7 +978,7 @@ export function useAiChat(onPromptSetUsername?: () => void) {
             return "Went back to previous track.";
           }
           case "generateHtml": {
-            const { html } = toolCall.args as { html: string };
+            const { html } = toolCall.input as { html: string };
 
             // Validate required parameter
             if (!html) {

@@ -1,4 +1,10 @@
-import { streamText, smoothStream } from "ai";
+import {
+  streamText,
+  smoothStream,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  convertToModelMessages,
+} from "ai";
 import { geolocation } from "@vercel/functions";
 import {
   SupportedModel,
@@ -688,14 +694,16 @@ export default async function handler(req: Request) {
       );
     });
 
-    const result = streamText({
-      model: selectedModel,
-      messages: enrichedMessages,
-      tools: {
+    const stream = createUIMessageStream({
+      async execute({ writer }) {
+        const result = streamText({
+          model: selectedModel,
+          messages: convertToModelMessages(enrichedMessages),
+          tools: {
         launchApp: {
           description:
             "Launch an application in the ryOS interface when the user explicitly requests it. If the id is 'internet-explorer', you must provide BOTH a real 'url' and a 'year' for time-travel; otherwise provide neither.",
-          parameters: z
+            inputSchema: z
             .object({
               id: z.enum(appIds).describe("The app id to launch"),
               url: z
@@ -768,14 +776,14 @@ export default async function handler(req: Request) {
         closeApp: {
           description:
             "Close an application in the ryOS interface—but only when the user explicitly asks you to close that specific app.",
-          parameters: z.object({
+            inputSchema: z.object({
             id: z.enum(appIds).describe("The app id to close"),
           }),
         },
         switchTheme: {
           description:
             "Switch the ryOS UI theme to a specific OS style when the user explicitly requests it.",
-          parameters: z.object({
+            inputSchema: z.object({
             theme: z
               .enum(themeIds)
               .describe(
@@ -786,7 +794,7 @@ export default async function handler(req: Request) {
         textEditSearchReplace: {
           description:
             "Search and replace text in a specific TextEdit document. You MUST always provide 'search', 'replace', and 'instanceId'. Set 'isRegex: true' ONLY if the user explicitly mentions using a regular expression. Use the instanceId from the system state (e.g., '15') to target a specific window.",
-          parameters: z.object({
+            inputSchema: z.object({
             search: z
               .string()
               .describe(
@@ -813,7 +821,7 @@ export default async function handler(req: Request) {
         textEditInsertText: {
           description:
             "Insert plain text into a specific TextEdit document. You MUST always provide 'text' and 'instanceId'. Appends to the end by default; use position 'start' to prepend. Use the instanceId from the system state (e.g., '15') to target a specific window.",
-          parameters: z.object({
+            inputSchema: z.object({
             text: z.string().describe("REQUIRED: The text to insert"),
             position: z
               .enum(["start", "end"])
@@ -831,7 +839,7 @@ export default async function handler(req: Request) {
         textEditNewFile: {
           description:
             "Create a new blank document in a new TextEdit instance. Use when the user explicitly requests a new or untitled file.",
-          parameters: z.object({
+            inputSchema: z.object({
             title: z
               .string()
               .optional()
@@ -844,7 +852,7 @@ export default async function handler(req: Request) {
         ipodPlayPause: {
           description:
             "Play, pause, or toggle playback on the iPod app. If the iPod app is not open, it will be launched automatically.",
-          parameters: z.object({
+            inputSchema: z.object({
             action: z
               .enum(["play", "pause", "toggle"])
               .optional()
@@ -856,7 +864,7 @@ export default async function handler(req: Request) {
         ipodPlaySong: {
           description:
             "Play a specific song in the iPod app by matching id, title, or artist. At least one of the parameters must be provided. If the iPod app is not open, it will be launched automatically.",
-          parameters: z
+            inputSchema: z
             .object({
               id: z
                 .string()
@@ -881,7 +889,7 @@ export default async function handler(req: Request) {
         ipodAddAndPlaySong: {
           description:
             "Adds a song to the iPod library from a YouTube video ID or URL and plays it. Supports YouTube URLs (youtube.com/watch?v=, youtu.be/), video IDs, and share URLs (os.ryo.lu/ipod/:id). The system will automatically fetch title, artist, and album information. The iPod app will be launched if it's not already open.",
-          parameters: z.object({
+            inputSchema: z.object({
             id: z
               .string()
               .describe(
@@ -892,18 +900,18 @@ export default async function handler(req: Request) {
         ipodNextTrack: {
           description:
             "Skip to the next track in the iPod app playlist. If the iPod app is not open, it will be launched automatically.",
-          parameters: z.object({}),
+            inputSchema: z.object({}),
         },
         ipodPreviousTrack: {
           description:
             "Skip to the previous track in the iPod app playlist. If the iPod app is not open, it will be launched automatically.",
-          parameters: z.object({}),
+            inputSchema: z.object({}),
         },
         // --- HTML generation & preview ---
         generateHtml: {
           description:
             "Generate an HTML snippet following the CODE_GENERATION_INSTRUCTIONS and render it in the chat. Provide the HTML markup as a single string in the 'html' field. Do NOT wrap it in markdown fences; the client will handle formatting.",
-          parameters: z.object({
+            inputSchema: z.object({
             html: z
               .string()
               .describe(
@@ -915,18 +923,21 @@ export default async function handler(req: Request) {
         aquarium: {
           description:
             "Render a playful emoji aquarium inside the chat bubble. Use when the user asks for an aquarium / fish tank / fishes / sam's aquarium.",
-          parameters: z.object({}),
+            inputSchema: z.object({}),
         },
+          },
+          temperature: 0.7,
+          maxOutputTokens: 6000,
+          experimental_transform: smoothStream({
+            chunking: /[\u4E00-\u9FFF]|\S+\s+/, 
+          }),
+        });
+
+        writer.merge(result.toUIMessageStream());
       },
-      temperature: 0.7,
-      maxTokens: 6000,
-      toolCallStreaming: true,
-      experimental_transform: smoothStream({
-        chunking: /[\u4E00-\u9FFF]|\S+\s+/,
-      }),
     });
 
-    const response = result.toDataStreamResponse();
+    const response = createUIMessageStreamResponse({ stream });
 
     // Add CORS headers to the response
     const headers = new Headers(response.headers);

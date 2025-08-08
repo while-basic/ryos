@@ -1,4 +1,4 @@
-import { Message as VercelMessage } from "ai";
+import { type Message as UIMessage } from '@ai-sdk/react';
 import {
   Loader2,
   AlertCircle,
@@ -211,10 +211,10 @@ const getAppName = (id?: string): string => {
 
 // Define an extended message type that includes username
 // Extend VercelMessage and add username and the 'human' role
-interface ChatMessage extends Omit<VercelMessage, "role"> {
+interface ChatMessage extends Omit<UIMessage, "role"> {
   // Omit the original role to redefine it
   username?: string; // Add username, make it optional for safety
-  role: VercelMessage["role"] | "human"; // Allow original roles plus 'human'
+  role: UIMessage["role"] | "human"; // Allow original roles plus 'human'
   isPending?: boolean; // Add isPending flag
   serverId?: string; // Real server ID when id is a clientId
 }
@@ -596,8 +596,9 @@ function ChatMessagesContent({
         
         // Check for aquarium in AI assistant messages (using parts)
         if (message.role === "assistant" && message.parts) {
-          const aquariumParts = message.parts.filter((p) => {
-            if (p.type !== "tool-invocation") return false;
+          const aquariumParts = message.parts.filter((p: unknown) => {
+            const part = p as { type: string };
+            if (part.type !== "tool-invocation") return false;
             const ti = (p as ToolInvocationPart).toolInvocation;
             return ti?.toolName === "aquarium";
           });
@@ -976,22 +977,23 @@ function ChatMessagesContent({
               >
                 {message.role === "assistant" ? (
                   <motion.div className="select-text flex flex-col gap-1">
-                    {message.parts?.map((part, partIndex) => {
+                    {message.parts?.map((part: unknown, partIndex: number) => {
                       const partKey = `${messageKey}-part-${partIndex}`;
-                      switch (part.type) {
+                      const thePart = part as { type: string };
+                      switch (thePart.type) {
                         case "text": {
                           const hasXmlTags =
                             /<textedit:(insert|replace|delete)/i.test(
-                              part.text
+                              (part as { text: string }).text
                             );
                           if (hasXmlTags) {
                             const openTags = (
-                              part.text.match(
+                              (part as { text: string }).text.match(
                                 /<textedit:(insert|replace|delete)/g
                               ) || []
                             ).length;
                             const closeTags = (
-                              part.text.match(
+                              (part as { text: string }).text.match(
                                 /<\/textedit:(insert|replace)>|<textedit:delete[^>]*\/>/g
                               ) || []
                             ).length;
@@ -1010,9 +1012,9 @@ function ChatMessagesContent({
                             }
                           }
 
-                          const rawPartContent = isUrgentMessage(part.text)
-                            ? part.text.slice(4).trimStart()
-                            : part.text;
+                          const rawPartContent = isUrgentMessage((part as { text: string }).text)
+                            ? (part as { text: string }).text.slice(4).trimStart()
+                            : (part as { text: string }).text;
                           const displayContent =
                             decodeHtmlEntities(rawPartContent);
                           const textContent = displayContent;

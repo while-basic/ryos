@@ -1,4 +1,4 @@
-import { useChat } from "ai/react";
+import { useChat } from '@ai-sdk/react';
 import { useCallback } from "react";
 import { useAppStore } from "@/stores/useAppStore";
 import { useInternetExplorerStore } from "@/stores/useInternetExplorerStore";

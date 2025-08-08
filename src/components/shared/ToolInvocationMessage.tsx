@@ -6,14 +6,14 @@ export interface ToolInvocation {
   step: number;
   toolCallId: string;
   toolName: string;
-  args?: {
+  input?: {
     id?: string;
     url?: string;
     year?: string;
     html?: string;
     [key: string]: unknown;
   };
-  result?: unknown;
+  output?: unknown;
 }
 
 export interface ToolInvocationPart {
@@ -44,7 +44,7 @@ export function ToolInvocationMessage({
   playDingSound,
 }: ToolInvocationMessageProps) {
   const { toolInvocation } = part;
-  const { toolName, state, args, result } = toolInvocation;
+  const { toolName, state, input, output } = toolInvocation;
 
   // Friendly display strings
   let displayCallMessage: string | null = null;
@@ -59,10 +59,10 @@ export function ToolInvocationMessage({
         displayCallMessage = "Inserting text…";
         break;
       case "launchApp":
-        displayCallMessage = `Launching ${getAppName(args?.id)}…`;
+        displayCallMessage = `Launching ${getAppName(input?.id)}…`;
         break;
       case "closeApp":
-        displayCallMessage = `Closing ${getAppName(args?.id)}…`;
+        displayCallMessage = `Closing ${getAppName(input?.id)}…`;
         break;
       case "textEditNewFile":
         displayCallMessage = "Creating new document…";
@@ -73,14 +73,14 @@ export function ToolInvocationMessage({
   }
 
   if (state === "result") {
-    if (toolName === "launchApp" && args?.id === "internet-explorer") {
-      const urlPart = args.url ? ` ${args.url}` : "";
-      const yearPart = args.year && args.year !== "" ? ` in ${args.year}` : "";
+    if (toolName === "launchApp" && input?.id === "internet-explorer") {
+      const urlPart = input.url ? ` ${input.url}` : "";
+      const yearPart = input.year && input.year !== "" ? ` in ${input.year}` : "";
       displayResultMessage = `Launched${urlPart}${yearPart}`;
     } else if (toolName === "launchApp") {
-      displayResultMessage = `Launched ${getAppName(args?.id)}`;
+      displayResultMessage = `Launched ${getAppName(input?.id)}`;
     } else if (toolName === "closeApp") {
-      displayResultMessage = `Closed ${getAppName(args?.id)}`;
+      displayResultMessage = `Closed ${getAppName(input?.id)}`;
     }
   }
 
@@ -88,13 +88,13 @@ export function ToolInvocationMessage({
   if (
     state === "result" &&
     toolName === "generateHtml" &&
-    typeof result === "string" &&
-    result.trim().length > 0
+    typeof output === "string" &&
+    output.trim().length > 0
   ) {
     return (
       <HtmlPreview
         key={partKey}
-        htmlContent={result}
+        htmlContent={output}
         onInteractionChange={setIsInteractingWithPreview}
         playElevatorMusic={playElevatorMusic}
         stopElevatorMusic={stopElevatorMusic}
@@ -116,7 +116,7 @@ export function ToolInvocationMessage({
         </div>
       );
     } else if (state === "call") {
-      const htmlContent = typeof args?.html === "string" ? args.html : "";
+      const htmlContent = typeof input?.html === "string" ? input.html : "";
       if (htmlContent) {
         return (
           <HtmlPreview
@@ -164,8 +164,8 @@ export function ToolInvocationMessage({
             <span>{displayResultMessage}</span>
           ) : (
             <div className="flex flex-col">
-              {typeof result === "string" && result.length > 0 ? (
-                <span className="text-gray-500">{result}</span>
+              {typeof output === "string" && output.length > 0 ? (
+                <span className="text-gray-500">{output}</span>
               ) : (
                 <span>{formatToolName(toolName)}</span>
               )}

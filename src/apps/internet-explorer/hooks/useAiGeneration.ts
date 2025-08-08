@@ -1,4 +1,4 @@
-import { useChat, type Message } from "ai/react";
+import { useChat, type Message } from '@ai-sdk/react';
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   useInternetExplorerStore,
