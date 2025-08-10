@@ -120,7 +120,18 @@ const PianoKey: React.FC<{
               isPressed ? "bg-[#ff33ff]" : "bg-white hover:bg-[#f5f5f5]"
             )
       )}
-      onPointerDown={(e) => onPointerDownKey(note, e)}
+      onPointerDown={(e) => {
+        // Disable implicit pointer capture on touch so pointerenter fires when dragging across keys
+        try {
+          if (
+            typeof e.currentTarget.hasPointerCapture === "function" &&
+            e.currentTarget.hasPointerCapture(e.pointerId)
+          ) {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+          }
+        } catch {}
+        onPointerDownKey(note, e);
+      }}
       onPointerEnter={(e) => onPointerEnterKey(note, e)}
       onPointerUp={(e) => onPointerUpKey(note, e)}
       onContextMenu={(e) => e.preventDefault()}
