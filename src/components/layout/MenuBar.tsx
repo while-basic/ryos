@@ -664,6 +664,7 @@ export function MenuBar({ children, inWindowFrame = false }: MenuBarProps) {
                 return (
                   <button
                     key={instanceId}
+                    data-taskbar-instance-id={instanceId}
                     className="px-2 gap-1 border-t border-y rounded-sm flex items-center justify-start"
                     onClick={() => {
                       if (isMinimized) {
