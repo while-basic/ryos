@@ -15,7 +15,7 @@ import { useThemeStore } from "@/stores/useThemeStore";
 import { getTheme } from "@/themes";
 import { ThemedIcon } from "@/components/shared/ThemedIcon";
 import { useAppStore } from "@/stores/useAppStore";
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion"; // REVERTED
 
 interface WindowFrameProps {
   children: React.ReactNode;
@@ -107,8 +107,7 @@ export function WindowFrame({
   // Keep track of window size before maximizing to restore it later
   const previousSizeRef = useRef({ width: 0, height: 0 });
   const windowRef = useRef<HTMLDivElement | null>(null);
-  const [isMinimizing, setIsMinimizing] = useState(false);
-  const [minimizeOrigin, setMinimizeOrigin] = useState<string | null>(null);
+  // REVERTED: framer-motion state removed
 
   // Get current theme
   const currentTheme = useThemeStore((state) => state.current);
@@ -188,41 +187,62 @@ export function WindowFrame({
     }
   };
 
-  // Compute transform-origin so scale zooms into the taskbar button horizontally
-  const computeMinimizeOrigin = useCallback((): string | null => {
-    if (!windowRef.current) return null;
-    const id = instanceId;
-    const winRect = windowRef.current.getBoundingClientRect();
-    let targetX = winRect.left + winRect.width / 2;
-    if (id) {
-      const btn = document.querySelector(
+  // Animate shrink to taskbar when minimizing (XP/98 only) - clone approach
+  const animateMinimizeToTaskbar = useCallback(
+    (instanceIdParam?: string) => {
+      if (!isXpTheme || !windowRef.current) return false;
+      const id = instanceIdParam || instanceId;
+      if (!id) return false;
+      const taskButton = document.querySelector(
         `[data-taskbar-instance-id="${id}"]`
       ) as HTMLElement | null;
-      if (btn) {
-        const br = btn.getBoundingClientRect();
-        targetX = br.left + br.width / 2;
-      }
-    }
-    const percentX = Math.max(
-      0,
-      Math.min(100, ((targetX - winRect.left) / winRect.width) * 100)
-    );
-    return `${percentX}% 100%`;
-  }, [instanceId]);
+      if (!taskButton) return false;
+      const winEl = windowRef.current;
+      const winRect = winEl.getBoundingClientRect();
+      const btnRect = taskButton.getBoundingClientRect();
+
+      const clone = winEl.cloneNode(true) as HTMLElement;
+      clone.style.position = "fixed";
+      clone.style.left = `${winRect.left}px`;
+      clone.style.top = `${winRect.top}px`;
+      clone.style.width = `${winRect.width}px`;
+      clone.style.height = `${winRect.height}px`;
+      clone.style.margin = "0";
+      clone.style.zIndex = "100000";
+      clone.style.pointerEvents = "none";
+      clone.style.transition = "all 160ms ease-in";
+      document.body.appendChild(clone);
+
+      // reflow
+      void clone.getBoundingClientRect();
+      clone.style.left = `${btnRect.left}px`;
+      clone.style.top = `${btnRect.top}px`;
+      clone.style.width = `${Math.max(90, Math.min(140, btnRect.width))}px`;
+      clone.style.height = `24px`;
+      clone.style.opacity = "0.85";
+      clone.style.transform = "scale(0.98)";
+
+      const cleanup = () => {
+        clone.removeEventListener("transitionend", cleanup);
+        clone.remove();
+      };
+      clone.addEventListener("transitionend", cleanup);
+      return true;
+    },
+    [isXpTheme, instanceId]
+  );
 
   const handleMinimize = useCallback(() => {
     if (!instanceId) return;
-    if (isXpTheme) {
-      const origin = computeMinimizeOrigin();
-      if (origin) setMinimizeOrigin(origin);
-      setIsMinimizing(true);
+    const didAnimate = animateMinimizeToTaskbar(instanceId);
+    if (didAnimate) {
       setTimeout(() => {
         useAppStore.getState().minimizeInstance(instanceId);
-      }, 180);
+      }, 140);
     } else {
       useAppStore.getState().minimizeInstance(instanceId);
     }
-  }, [instanceId, isXpTheme, computeMinimizeOrigin]);
+  }, [instanceId, animateMinimizeToTaskbar]);
 
   // Function to actually perform the close operation
   // This should be called by the parent component after confirmation
@@ -591,7 +611,7 @@ export function WindowFrame({
   };
 
   return (
-    <motion.div
+    <div
       ref={windowRef}
       className={cn(
         "absolute p-2 md:p-0 w-full md:h-full md:mt-0 select-none",
@@ -601,9 +621,6 @@ export function WindowFrame({
         // Disable all pointer events when window is closing
         !isOpen && "pointer-events-none"
       )}
-      initial={false}
-      animate={isMinimizing ? { scale: 0.06, opacity: 0 } : { scale: 1, opacity: 1 }}
-      transition={{ duration: 0.18, ease: [0.2, 0, 0.2, 1] }}
       onClick={() => {
         if (!isForeground) {
           if (instanceId) {
@@ -625,9 +642,9 @@ export function WindowFrame({
         maxWidth: mergedConstraints.maxWidth || undefined,
         maxHeight: mergedConstraints.maxHeight || undefined,
         transition: isDragging || resizeType ? "none" : undefined,
-        transform: !isMinimizing && !isInitialMount && !isOpen ? "scale(0.95)" : undefined,
-        opacity: !isMinimizing && !isInitialMount && !isOpen ? 0 : undefined,
-        transformOrigin: minimizeOrigin || "center",
+        transform: !isInitialMount && !isOpen ? "scale(0.95)" : undefined,
+        opacity: !isInitialMount && !isOpen ? 0 : undefined,
+        transformOrigin: "center",
       }}
     >
       <div className="relative w-full h-full">
@@ -1260,6 +1277,6 @@ export function WindowFrame({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
