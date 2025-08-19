@@ -14,6 +14,7 @@ import { useAppStoreShallow } from "@/stores/helpers";
 import { useThemeStore } from "@/stores/useThemeStore";
 import { getTheme } from "@/themes";
 import { ThemedIcon } from "@/components/shared/ThemedIcon";
+import { useAppStore } from "@/stores/useAppStore";
 
 interface WindowFrameProps {
   children: React.ReactNode;
@@ -816,7 +817,9 @@ export function WindowFrame({
                   aria-label="Minimize"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Minimize functionality could be added here
+                    if (instanceId) {
+                      useAppStore.getState().minimizeInstance(instanceId);
+                    }
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
@@ -968,7 +971,9 @@ export function WindowFrame({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Minimize functionality could be added here
+                    if (instanceId) {
+                      useAppStore.getState().minimizeInstance(instanceId);
+                    }
                   }}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
