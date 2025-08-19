@@ -975,6 +975,7 @@ export function WindowFrame({
                   onClick={(e) => {
                     e.stopPropagation();
                     if (instanceId) {
+                      playWindowCollapse();
                       minimizeInstance(instanceId);
                     }
                   }}
