@@ -133,22 +133,28 @@ function MacDock() {
       <motion.div
         layout
         layoutId={`dock-icon-${idKey}`}
-        initial={isNew ? { scale: 0, opacity: 0, y: 20 } : false}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0, opacity: 0, y: 20 }}
+        initial={isNew ? { scale: 0, opacity: 0 } : false}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ 
+          scale: 0, 
+          opacity: 0,
+        }}
         transition={{
           type: "spring",
-          stiffness: 400,
-          damping: 25,
-          mass: 0.5,
+          stiffness: 300,
+          damping: 30,
+          mass: 0.8,
           layout: { 
             type: "spring", 
-            stiffness: 500, 
-            damping: 35,
+            stiffness: 300, 
+            damping: 30,
             mass: 0.8,
           },
         }}
-        style={{ transformOrigin: "bottom center" }}
+        style={{ 
+          transformOrigin: "bottom center",
+          willChange: "transform",
+        }}
         className="flex-shrink-0"
       >
         <button
@@ -228,7 +234,7 @@ function MacDock() {
           onTouchEnd={() => setMouseX(null)}
         >
           <LayoutGroup>
-            <AnimatePresence mode="popLayout" initial={false}>
+            <AnimatePresence initial={false}>
               {/* Left pinned */}
               {pinnedLeft.map((appId) => {
                 const icon = getAppIconPath(appId);
