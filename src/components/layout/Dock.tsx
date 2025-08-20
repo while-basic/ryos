@@ -6,6 +6,7 @@ import { AppId, getAppIconPath, appRegistry } from "@/config/appRegistry";
 import { useLaunchApp } from "@/hooks/useLaunchApp";
 import { useFinderStore } from "@/stores/useFinderStore";
 import { useFilesStore } from "@/stores/useFilesStore";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   AnimatePresence,
   motion,
@@ -17,6 +18,7 @@ import {
 } from "framer-motion";
 
 function MacDock() {
+  const isMobile = useIsMobile();
   const { instances, instanceOrder, bringInstanceToForeground } =
     useAppStoreShallow((s) => ({
       instances: s.instances,
@@ -395,6 +397,10 @@ function MacDock() {
             maxWidth: "min(92vw, 980px)",
             transformOrigin: "center bottom",
             borderRadius: "0px",
+            overflowX: isMobile ? "auto" : "visible",
+            overflowY: "hidden",
+            WebkitOverflowScrolling: isMobile ? "touch" : undefined,
+            overscrollBehaviorX: isMobile ? "contain" : undefined,
           }}
           transition={{
             layout: {
