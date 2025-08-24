@@ -107,11 +107,10 @@ export function FinderAppComponent({
   const removeFinderInstance = useFinderStore((state) => state.removeInstance);
   const updateFinderInstance = useFinderStore((state) => state.updateInstance);
   const finderInstances = useFinderStore((state) => state.instances);
-  const pathViewPreferences = useFinderStore((state) => state.pathViewPreferences);
   const setViewTypeForPath = useFinderStore((state) => state.setViewTypeForPath);
-  const getDefaultViewTypeForPath = useFinderStore((state) => state.getDefaultViewTypeForPath);
 
   // Legacy store methods for single-window mode
+  const legacyViewType = useFinderStore((state) => state.viewType);
   const legacySortType = useFinderStore((state) => state.sortType);
   const legacySetViewType = useFinderStore((state) => state.setViewType);
   const legacySetSortType = useFinderStore((state) => state.setSortType);
@@ -176,7 +175,11 @@ export function FinderAppComponent({
   // Get current instance data (only if using instanceId)
   const currentInstance = instanceId ? finderInstances[instanceId] : null;
 
-  // Use instance data if available, otherwise use legacy store (for sort only)
+  // Use instance data if available, otherwise use legacy store
+  const viewType = instanceId
+    ? currentInstance?.viewType || "list"
+    : legacyViewType;
+
   const sortType = instanceId
     ? currentInstance?.sortType || "name"
     : legacySortType;
@@ -223,10 +226,6 @@ export function FinderAppComponent({
     createFolder,
     moveFile,
   } = useFileSystem(initialFileSystemPath, { instanceId });
-
-  // Derive view type directly from store per path (no effect)
-  const viewType: ViewType =
-    pathViewPreferences[currentPath] || getDefaultViewTypeForPath(currentPath);
 
   const setViewType = useCallback(
     (type: ViewType) => {
