@@ -996,13 +996,9 @@ export function FinderAppComponent({
               onRenameRequest={handleRenameRequest}
               onItemContextMenu={handleItemContextMenu}
             />
-            {(isLoading || error) && (
+            {error && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-[1px] z-10 pointer-events-auto">
-                {error ? (
-                  <div className="text-red-500">{error}</div>
-                ) : (
-                  <div>Loading...</div>
-                )}
+                <div className="text-red-500">{error}</div>
               </div>
             )}
           </div>
