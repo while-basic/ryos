@@ -236,8 +236,8 @@ export const useFinderStore = create<FinderStoreState>()(
           }
 
           // Ensure per-path preferences map exists
-          // @ts-expect-error: state is mutable during rehydrate
-          if (!state.pathViewPreferences) state.pathViewPreferences = {};
+          const anyState = state as unknown as { pathViewPreferences?: Record<string, ViewType> };
+          if (!anyState.pathViewPreferences) anyState.pathViewPreferences = {};
         }
       },
     }
