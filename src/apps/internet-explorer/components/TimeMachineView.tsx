@@ -657,7 +657,7 @@ const TimeMachineView: React.FC<TimeMachineViewProps> = ({
             <AnimatePresence>
               {isOpen && (
                 <motion.div
-                  className={`fixed inset-0 z-[10000] ${
+                  className={`fixed inset-0 z-[9000] ${
                     shaderEffectEnabled
                       ? "bg-black/90"
                       : "bg-black/70 backdrop-blur-xl"
