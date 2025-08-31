@@ -12,6 +12,9 @@ import { PhotoBoothApp } from "@/apps/photo-booth";
 import { SynthApp } from "@/apps/synth";
 import { IpodApp } from "@/apps/ipod";
 import { TerminalApp } from "@/apps/terminal";
+import { CalculatorApp } from "@/apps/calculator";
+import { CalendarApp } from "@/apps/calendar";
+import { WeatherApp } from "@/apps/weather";
 import { appIds } from "./appIds";
 import type {
   BaseApp,
@@ -145,6 +148,28 @@ export const appRegistry = {
       defaultSize: { width: 365, height: 415 },
       minSize: { width: 320, height: 415 },
       maxSize: { width: 365, height: 600 },
+    } as WindowConstraints,
+  },
+  [CalculatorApp.id]: {
+    ...CalculatorApp,
+    windowConfig: {
+      defaultSize: { width: 280, height: 400 },
+      minSize: { width: 280, height: 400 },
+      maxSize: { width: 280, height: 400 },
+    } as WindowConstraints,
+  },
+  [CalendarApp.id]: {
+    ...CalendarApp,
+    windowConfig: {
+      defaultSize: { width: 700, height: 500 },
+      minSize: { width: 500, height: 400 },
+    } as WindowConstraints,
+  },
+  [WeatherApp.id]: {
+    ...WeatherApp,
+    windowConfig: {
+      defaultSize: { width: 600, height: 450 },
+      minSize: { width: 400, height: 350 },
     } as WindowConstraints,
   },
 } as const;

@@ -1,5 +1,6 @@
 @import url("/fonts/fonts.css");
 @import "./styles/themes.css";
+@import "./styles/modern-theme.css";
 @import "tailwindcss";
 @config "../tailwind.config.js";
 

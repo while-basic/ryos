@@ -1,0 +1,379 @@
+/*
+----------------------------------------------------------------------------
+ File:       modern-theme.css
+ Project:     ryOS
+ Created by:  Celaya Solutions, 2025
+ Author:      Christopher Celaya <chris@chriscelaya.com>
+ Description: Modern OS theme CSS overrides for flat design and subtle effects
+ Version:     1.0.0
+ License:     BSL (SPDX id BUSL)
+ Last Update: July 2025
+----------------------------------------------------------------------------
+*/
+
+/* Modern Theme CSS Variables */
+:root[data-os-theme="modern"] {
+  /* Font settings */
+  --os-font-ui: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --os-font-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  
+  /* Color variables */
+  --os-color-window-bg: #f8f9fa;
+  --os-color-menubar-bg: rgba(248, 249, 250, 0.85);
+  --os-color-menubar-border: rgba(0, 0, 0, 0.06);
+  --os-color-menubar-text: #1a1a1a;
+  --os-color-window-border: rgba(0, 0, 0, 0.08);
+  --os-color-window-border-inactive: rgba(0, 0, 0, 0.04);
+  --os-color-titlebar-active-bg: rgba(248, 249, 250, 0.85);
+  --os-color-titlebar-inactive-bg: rgba(248, 249, 250, 0.7);
+  --os-color-titlebar-text: #1a1a1a;
+  --os-color-titlebar-text-inactive: #8e8e8e;
+  --os-color-titlebar-border: rgba(0, 0, 0, 0.05);
+  --os-color-titlebar-border-inactive: rgba(0, 0, 0, 0.03);
+  --os-color-titlebar-border-bottom: rgba(0, 0, 0, 0.05);
+  
+  /* Button styling */
+  --os-color-button-face: #ffffff;
+  --os-color-button-highlight: rgba(255, 255, 255, 0.9);
+  --os-color-button-shadow: rgba(0, 0, 0, 0.1);
+  --os-color-button-active-face: #f0f0f0;
+  
+  /* Traffic lights */
+  --os-color-traffic-light-close: #ff5f57;
+  --os-color-traffic-light-close-hover: #ff3b30;
+  --os-color-traffic-light-minimize: #ffbd2e;
+  --os-color-traffic-light-minimize-hover: #ffb700;
+  --os-color-traffic-light-maximize: #28c840;
+  --os-color-traffic-light-maximize-hover: #00b900;
+  
+  /* Selection colors */
+  --os-color-selection-bg: #007aff;
+  --os-color-selection-text: #ffffff;
+  --os-color-selection-glow: rgba(0, 122, 255, 0.4);
+  
+  /* Text colors */
+  --os-color-text-primary: #1a1a1a;
+  --os-color-text-secondary: #6e6e6e;
+  --os-color-text-disabled: #aeaeae;
+  
+  /* Metrics */
+  --os-metrics-border-width: 1px;
+  --os-metrics-radius: 0.75rem;
+  --os-metrics-titlebar-height: 2.25rem;
+  --os-metrics-titlebar-radius: 0.75rem;
+  --os-metrics-menubar-height: 2.25rem;
+  --os-window-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  
+  /* Backdrop blur for transparency effects */
+  --os-backdrop-blur: 10px;
+}
+
+/* Modern window styling with subtle blur effect */
+:root[data-os-theme="modern"] .window {
+  border: var(--os-metrics-border-width) solid var(--os-color-window-border) !important;
+  border-radius: var(--os-metrics-radius) !important;
+  overflow: hidden;
+  backdrop-filter: blur(var(--os-backdrop-blur));
+}
+
+:root[data-os-theme="modern"] .window:not(.is-foreground) {
+  border: var(--os-metrics-border-width) solid var(--os-color-window-border-inactive) !important;
+}
+
+/* Modern title bar with rounded corners */
+:root[data-os-theme="modern"] .title-bar {
+  border-radius: var(--os-metrics-titlebar-radius) var(--os-metrics-titlebar-radius) 0 0 !important;
+  border-bottom: 1px solid var(--os-color-titlebar-border-bottom) !important;
+  backdrop-filter: blur(var(--os-backdrop-blur));
+  height: var(--os-metrics-titlebar-height) !important;
+  display: flex;
+  align-items: center;
+}
+
+/* Font styling for modern theme */
+:root[data-os-theme="modern"] body {
+  font-family: var(--os-font-ui) !important;
+  -webkit-font-smoothing: antialiased !important;
+  font-smooth: auto !important;
+  font-size: 14px !important;
+}
+
+:root[data-os-theme="modern"] * {
+  font-family: inherit;
+}
+
+/* Modern button styling */
+:root[data-os-theme="modern"] button:not(.traffic-light) {
+  border-radius: 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--os-color-button-face);
+  padding: 0.5rem 1rem;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+:root[data-os-theme="modern"] button:not(.traffic-light):hover {
+  background: var(--os-color-button-highlight);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+:root[data-os-theme="modern"] button:not(.traffic-light):active {
+  background: var(--os-color-button-active-face);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transform: translateY(1px);
+}
+
+/* Modern traffic light buttons */
+:root[data-os-theme="modern"] .traffic-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin: 0 4px;
+  transition: all 0.2s ease;
+}
+
+:root[data-os-theme="modern"] .traffic-light.close {
+  background-color: var(--os-color-traffic-light-close);
+}
+
+:root[data-os-theme="modern"] .traffic-light.close:hover {
+  background-color: var(--os-color-traffic-light-close-hover);
+}
+
+:root[data-os-theme="modern"] .traffic-light.minimize {
+  background-color: var(--os-color-traffic-light-minimize);
+}
+
+:root[data-os-theme="modern"] .traffic-light.minimize:hover {
+  background-color: var(--os-color-traffic-light-minimize-hover);
+}
+
+:root[data-os-theme="modern"] .traffic-light.maximize {
+  background-color: var(--os-color-traffic-light-maximize);
+}
+
+:root[data-os-theme="modern"] .traffic-light.maximize:hover {
+  background-color: var(--os-color-traffic-light-maximize-hover);
+}
+
+/* Modern menubar styling */
+:root[data-os-theme="modern"] .menubar {
+  backdrop-filter: blur(var(--os-backdrop-blur));
+  border-bottom: 1px solid var(--os-color-menubar-border);
+  height: var(--os-metrics-menubar-height);
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+}
+
+/* Modern input styling */
+:root[data-os-theme="modern"] input,
+:root[data-os-theme="modern"] select,
+:root[data-os-theme="modern"] textarea {
+  border-radius: 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0.75rem;
+  font-size: 14px;
+  background-color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
+}
+
+:root[data-os-theme="modern"] input:focus,
+:root[data-os-theme="modern"] select:focus,
+:root[data-os-theme="modern"] textarea:focus {
+  border-color: var(--os-color-selection-bg);
+  box-shadow: 0 0 0 2px var(--os-color-selection-glow);
+  outline: none;
+}
+
+/* Modern select styling */
+:root[data-os-theme="modern"] select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 2L6 7L11 2' stroke='%236e6e6e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  padding-right: 2.5rem;
+}
+
+/* Modern scrollbar styling */
+:root[data-os-theme="modern"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+:root[data-os-theme="modern"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+:root[data-os-theme="modern"] ::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+:root[data-os-theme="modern"] ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Modern dropdown menu styling */
+:root[data-os-theme="modern"] [role="menuitem"],
+:root[data-os-theme="modern"] [role="menuitemcheckbox"],
+:root[data-os-theme="modern"] [role="menuitemradio"],
+:root[data-os-theme="modern"] [role="option"] {
+  font-size: 14px !important;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  transition: all 0.15s ease;
+}
+
+:root[data-os-theme="modern"] [role="menuitem"]:focus,
+:root[data-os-theme="modern"] [role="menuitemcheckbox"]:focus,
+:root[data-os-theme="modern"] [role="menuitemradio"]:focus,
+:root[data-os-theme="modern"] [role="option"]:focus,
+:root[data-os-theme="modern"] [role="option"][data-highlighted] {
+  background-color: var(--os-color-selection-bg) !important;
+  color: var(--os-color-selection-text) !important;
+  outline: none !important;
+}
+
+/* Modern switch styling */
+:root[data-os-theme="modern"] .os-switch {
+  position: relative;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.15);
+  border: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 0 2px;
+  height: 20px;
+  width: 36px;
+  transition: background 0.2s ease;
+}
+
+:root[data-os-theme="modern"] .os-switch[data-state="checked"] {
+  background: var(--os-color-selection-bg);
+}
+
+:root[data-os-theme="modern"] .os-switch-thumb {
+  position: relative;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+:root[data-os-theme="modern"] .os-switch[data-state="checked"] .os-switch-thumb {
+  transform: translateX(16px);
+}
+
+/* Modern chat bubble styling */
+:root[data-os-theme="modern"] .chat-bubble {
+  border-radius: 1rem !important;
+  padding: 0.75rem 1rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  font-size: 14px !important;
+}
+
+/* Enhanced shadow for modern foreground windows */
+:root[data-os-theme="modern"] .shadow-os-window.is-foreground {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Lighter shadow for modern background windows */
+:root[data-os-theme="modern"] .shadow-os-window:not(.is-foreground) {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Modern dialog styling */
+:root[data-os-theme="modern"] .dialog {
+  border-radius: var(--os-metrics-radius) !important;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+/* Modern tab styling */
+:root[data-os-theme="modern"] [role="tab"] {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem 0.5rem 0 0;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+:root[data-os-theme="modern"] [role="tab"][data-state="active"] {
+  border-bottom: 2px solid var(--os-color-selection-bg);
+  color: var(--os-color-selection-bg);
+}
+
+/* Modern slider styling */
+:root[data-os-theme="modern"] .os-slider-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+:root[data-os-theme="modern"] .os-slider-range {
+  background: var(--os-color-selection-bg) !important;
+  height: 4px;
+  border-radius: 9999px;
+}
+
+:root[data-os-theme="modern"] .os-slider-thumb {
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+:root[data-os-theme="modern"] .os-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+/* Animations for modern theme */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+:root[data-os-theme="modern"] .window {
+  animation: fadeIn 0.2s ease-out, slideUp 0.2s ease-out;
+}
+
+/* Responsive design improvements for mobile */
+@media (max-width: 768px) {
+  :root[data-os-theme="modern"] .window {
+    border-radius: 0.5rem !important;
+  }
+  
+  :root[data-os-theme="modern"] .title-bar {
+    height: 3rem !important;
+  }
+  
+  :root[data-os-theme="modern"] button:not(.traffic-light) {
+    padding: 0.75rem 1rem;
+    min-height: 44px; /* Better touch target */
+  }
+  
+  :root[data-os-theme="modern"] input,
+  :root[data-os-theme="modern"] select,
+  :root[data-os-theme="modern"] textarea {
+    padding: 0.75rem;
+    min-height: 44px; /* Better touch target */
+  }
+  
+  :root[data-os-theme="modern"] .traffic-light {
+    width: 16px;
+    height: 16px;
+    margin: 0 6px;
+  }
+}

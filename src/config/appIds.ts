@@ -13,6 +13,9 @@ export const appIds = [
   "pc",
   "terminal",
   "control-panels",
+  "calculator",
+  "calendar",
+  "weather",
 ] as const;
 
 export type AppId = typeof appIds[number]; 

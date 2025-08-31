@@ -34,7 +34,10 @@ export interface BaseApp<TInitialData = unknown> {
     | "photo-booth"
     | "synth"
     | "ipod"
-    | "terminal";
+    | "terminal"
+    | "calculator"
+    | "calendar"
+    | "weather";
   name: string;
   icon: string | { type: "image"; src: string };
   description: string;

@@ -49,7 +49,7 @@ async function ensureLegacyCss(theme: OsThemeId) {
 }
 
 export const useThemeStore = create<ThemeState>((set) => ({
-  current: "macosx",
+  current: "modern",
   setTheme: (theme) => {
     set({ current: theme });
     localStorage.setItem("os_theme", theme);

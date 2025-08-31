@@ -57,6 +57,7 @@ type PhotoCategory =
   | "convergency"
   | "foliage"
   | "landscapes"
+  | "modern"
   | "nostalgia"
   | "objects"
   | "structures";
@@ -72,6 +73,9 @@ const PHOTO_WALLPAPERS: Record<PhotoCategory, string[]> = {
     "ufo_1",
     "ufo_2",
     "ufo_3",
+  ],
+  modern: [
+    "modern-landscape",
   ],
   convergency: Array.from({ length: 15 }, (_, i) => `convergence_${i + 1}`),
   foliage: [

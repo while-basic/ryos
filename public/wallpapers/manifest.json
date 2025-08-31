@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2025-07-25T04:19:03.185Z",
+  "generatedAt": "2025-08-31T07:44:46.782Z",
   "tiles": [
     "tiles/azul_dark.png",
     "tiles/azul_extra_light.png",
@@ -43,6 +43,7 @@
     "tiles/ripple_azul.png",
     "tiles/ripple_bondi.png",
     "tiles/ripple_poppy.png",
+    "tiles/subtle-pattern.png",
     "tiles/sunny.png",
     "tiles/sunny_dark.png",
     "tiles/sunny_light.png",
@@ -51,6 +52,9 @@
     "tiles/waves_sunny.png"
   ],
   "photos": {
+    "modern": [
+      "photos/modern-landscape.jpg"
+    ],
     "landscapes": [
       "photos/landscapes/beach.jpg",
       "photos/landscapes/clouds.jpg",
